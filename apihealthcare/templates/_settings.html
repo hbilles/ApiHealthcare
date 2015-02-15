@@ -1,0 +1,48 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+	label:        "API Username"|t,
+	id:           'apiUsername',
+	name:         'apiUsername',
+	instructions: "The username used to connect to API Healthcare's API."|t,
+	value:        settings.apiUsername,
+	errors:       settings.getErrors('apiUsername')
+}) }}
+
+{{ forms.textField({
+	label:        "API Password"|t,
+	type:         'password',
+	id:           'apiPassword',
+	name:         'apiPassword',
+	instructions: "The password associated with the API user."|t,
+	value:        settings.apiPassword,
+	errors:       settings.getErrors('apiPassword')
+}) }}
+
+{{ forms.textField({
+	label:        "API Cluster Prefix"|t,
+	id:           'apiClusterPrefix',
+	name:         'apiClusterPrefix',
+	instructions: "The client's Cluster Prefix as defined by API Healthcare."|t,
+	value:        settings.apiClusterPrefix,
+	errors:       settings.getErrors('apiClusterPrefix')
+}) }}
+
+{{ forms.textField({
+	label:        "API Site Name"|t,
+	id:           'apiSiteName',
+	name:         'apiSiteName',
+	instructions: "The client's Site Name as defined by API Healthcare."|t,
+	value:        settings.apiSiteName,
+	errors:       settings.getErrors('apiSiteName')
+}) }}
+
+{{ forms.textField({
+	label:        "Search Base Uri"|t,
+	id:           'searchBaseUri',
+	name:         'searchBaseUri',
+	instructions: "The base Uri for searching positions on this site. No trailing slashes."|t,
+	value:        settings.searchBaseUri,
+	errors:       settings.getErrors('searchBaseUri')
+}) }}
+
