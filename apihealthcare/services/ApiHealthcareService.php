@@ -86,18 +86,17 @@ class ApiHealthcareService extends BaseApplicationComponent
 	private function _prepSearchParams(ApiHealthcare_QueryModel $query, $queryUri = null)
 	{
 		$params = array();
+		// request params get sent to API
+		$params['request'] = array();
+		// filter params further filter API response
+		$params['filter']  = array();
 
 		//$params['orderType']     = (isset($query->orderType))  ? urldecode($query->orderType) : null;
-		$params['certification'] = (isset($query->profession)) ? urldecode($query->profession) : null;
-		$params['specialty']     = (isset($query->specialty))  ? urldecode($query->specialty) : null;
-		$params['clientStateIn'] = (isset($query->state))      ? urldecode($query->state) : null;
-		$params['clientCityIn']  = (isset($query->city))       ? urldecode($query->city) : null;
-		//$params['zipCode']       = (isset($query->zipCode))    ? urldecode($query->zipCode) : null;
-		$params['shiftStart']    = (isset($query->shiftStart)) ? $query->shiftStart : null;
-		$params['status']        = (isset($query->status))     ? $query->status : null;
-		$params['orderBy1']      = 'shiftStartTime';
-		$params['orderBy2']      = 'state';
-		$params['orderBy3']      = 'city';
+		$params['request']['shiftStart']    = (isset($query->shiftStart)) ? $query->shiftStart : null;
+		$params['request']['status']        = (isset($query->status))     ? $query->status : null;
+		$params['request']['orderBy1']      = 'shiftStartTime';
+		$params['request']['orderBy2']      = 'state';
+		$params['request']['orderBy3']      = 'city';
 
 		if ($queryUri)
 		{
@@ -105,11 +104,11 @@ class ApiHealthcareService extends BaseApplicationComponent
 
 			// NOTE: the first spot in $queryUriArray is empty, so start from index '1'
 			//$params['orderType']     = ($queryUriArray[1] !== 'all') ? urldecode($queryUriArray[1]) : null;
-			$params['certification'] = ($queryUriArray[2] !== 'all') ? urldecode($queryUriArray[2]) : null;
-			$params['specialty']     = ($queryUriArray[3] !== 'all') ? urldecode($queryUriArray[3]) : null;
-			$params['clientStateIn'] = ($queryUriArray[4] !== 'all') ? urldecode($queryUriArray[4]) : null;
-			$params['clientCityIn']  = ($queryUriArray[5] !== 'all') ? urldecode($queryUriArray[5]) : null;
-			//$params['zipCode']       = ($queryUriArray[6] !== 'all') ? $queryUriArray[6] : null;
+			$params['request']['certification'] = ($queryUriArray[2] !== 'all') ? urldecode($queryUriArray[2]) : null;
+			$params['request']['specialty']     = ($queryUriArray[3] !== 'all') ? urldecode($queryUriArray[3]) : null;
+			$params['request']['clientStateIn'] = ($queryUriArray[4] !== 'all') ? urldecode($queryUriArray[4]) : null;
+			$params['request']['clientCityIn']  = ($queryUriArray[5] !== 'all') ? urldecode($queryUriArray[5]) : null;
+			$params['filter']['zipCode']        = ($queryUriArray[6] !== 'all') ? urldecode($queryUriArray[6]) : null;
 		}
 
 		return $params;
@@ -117,9 +116,10 @@ class ApiHealthcareService extends BaseApplicationComponent
 
 	/**
 	 * @param string $jsonString
+	 * @param array $params
 	 * @return array containing multiple ApiHealthcare_QueryModels
 	 */
-	private function _prepResults($jsonString)
+	private function _prepResults($jsonString, $params = null)
 	{
 		if (!$jsonString)
 		{
@@ -134,21 +134,35 @@ class ApiHealthcareService extends BaseApplicationComponent
 		{
 			foreach ($array as $item)
 			{
-				$result = new ApiHealthcare_QueryModel();
+				$match = true;
 
-				$result->orderType   = $item['orderType'];
-				$result->profession  = $item['orderCertification'];
-				$result->specialty   = $item['orderSpecialty'];
-				$result->state       = $item['state'];
-				$result->city        = $item['city'];
-				$result->zipCode     = $item['zipCode'];
-				$result->shiftStart  = $item['shiftStartTime'];
-				$result->status      = $item['status'];
-				$result->jobId       = $item['orderId'];
-				$result->clientName  = $item['clientName'];
-				$result->description = $item['note'];
+				// if filter params exist, test against filters
+				if (count($params) > 0)
+				{
+					foreach($params as $key => $value)
+					{
+						$match = ($item[$key] === $value) ? true : false;
+					}
+				}
 
-				$results[] = $result;
+				if ($match)
+				{
+					$result = new ApiHealthcare_QueryModel();
+
+					$result->orderType   = $item['orderType'];
+					$result->profession  = $item['orderCertification'];
+					$result->specialty   = $item['orderSpecialty'];
+					$result->state       = $item['state'];
+					$result->city        = $item['city'];
+					$result->zipCode     = $item['zipCode'];
+					$result->shiftStart  = $item['shiftStartTime'];
+					$result->status      = $item['status'];
+					$result->jobId       = $item['orderId'];
+					$result->clientName  = $item['clientName'];
+					$result->description = $item['note'];
+
+					$results[] = $result;	
+				}
 			}
 
 			return $results;
@@ -184,23 +198,20 @@ class ApiHealthcareService extends BaseApplicationComponent
 			return false;
 		}
 
-		$searchQuery = new ApiHealthcare_QueryModel();
-
-		//$searchQuery->orderType   = (isset($query->orderType))   ? $query->orderType   : 'all';
-		$searchQuery->orderType  = 'all';
-		$searchQuery->profession = ($query->profession) ? $query->profession : 'all';
-		$searchQuery->specialty  = ($query->specialty)  ? $query->specialty  : 'all';
-		$searchQuery->state      = ($query->state)      ? $query->state      : 'all';
-		$searchQuery->city       = ($query->city)       ? $query->city       : 'all';
-		$searchQuery->zipCode    = ($query->zipCode)    ? $query->zipCode    : 'all';
+		$query->orderType  = 'all';
+		if (!$query->profession) { $query->profession = 'all'; }
+		if (!$query->specialty)  { $query->specialty = 'all'; }
+		if (!$query->state)      { $query->state = 'all'; }
+		if (!$query->city)       { $query->city = 'all'; }
+		if (!$query->zipCode)    { $query->zipCode = 'all'; }
 
 		$searchUri = '/'
-			. $searchQuery->orderType . '/'
-			. $searchQuery->profession . '/'
-			. $searchQuery->specialty . '/'
-			. $searchQuery->state . '/'
-			. $searchQuery->city . '/'
-			. $searchQuery->zipCode;
+			. $query->orderType . '/'
+			. $query->profession . '/'
+			. $query->specialty . '/'
+			. $query->state . '/'
+			. $query->city . '/'
+			. $query->zipCode;
 
 		$searchUri = ($searchUri === '/all/all/all/all/all/all') ? '?show-all=true' : $searchUri;
 
@@ -226,7 +237,7 @@ class ApiHealthcareService extends BaseApplicationComponent
 		if ($queryString === 'show-all=true')
 		{
 			$params = $this->_prepSearchParams($query);
-			$jsonString = $this->_sendRequest('getOrders', $params);
+			$jsonString = $this->_sendRequest('getOrders', $params['request']);
 			$results = $this->_prepResults($jsonString);
 		}
 		else
@@ -237,8 +248,8 @@ class ApiHealthcareService extends BaseApplicationComponent
 			{
 				$queryUri = $parts[1];
 				$params = $this->_prepSearchParams($query, $queryUri);
-				$jsonString = $this->_sendRequest('getOrders', $params);
-				$results = $this->_prepResults($jsonString);
+				$jsonString = $this->_sendRequest('getOrders', $params['request']);
+				$results = $this->_prepResults($jsonString, $params['filter']);
 			}
 		}
 		
