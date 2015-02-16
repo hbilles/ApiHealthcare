@@ -6,17 +6,19 @@ class ApiHealthcare_QueryModel extends BaseModel
 	protected function defineAttributes()
 	{
 		return array(
-			'orderType'   => AttributeType::String,
-			'profession'  => AttributeType::String,
-			'specialty'   => AttributeType::String,
-			'state'       => AttributeType::String,
-			'city'        => AttributeType::String,
-			'zipCode'     => AttributeType::Number,
-			'shiftStart'  => AttributeType::DateTime,
-			'status'      => AttributeType::String,
-			'jobId'       => AttributeType::Number,
-			'clientName'  => AttributeType::String,
-			'description' => AttributeType::String,
+			'orderType'      => AttributeType::String,
+			'profession'     => AttributeType::String,
+			'professionSlug' => AttributeType::Slug,
+			'specialty'      => AttributeType::String,
+			'specialtySlug'  => AttributeType::Slug,
+			'state'          => AttributeType::String,
+			'city'           => AttributeType::String,
+			'zipCode'        => AttributeType::Number,
+			'shiftStart'     => AttributeType::DateTime,
+			'status'         => AttributeType::String,
+			'jobId'          => AttributeType::Number,
+			'clientName'     => AttributeType::String,
+			'description'    => AttributeType::String,
 		);
 	}
 

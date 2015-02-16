@@ -3,19 +3,19 @@ namespace Craft;
 
 class ApiHealthcareVariable
 {
-	public function getProfessions()
+	public function getAllProfessions()
 	{
-		return craft()->apiHealthcare->getProfessions();
+		return craft()->apiHealthcare_options->getAllProfessions();
 	}
 
-	public function getSpecialties()
+	public function getAllSpecialties()
 	{
-		return craft()->apiHealthcare->getSpecialties();
+		return craft()->apiHealthcare_options->getAllSpecialties();
 	}
 
 	public function getSearchResultsFromUrl()
 	{
-		return craft()->apiHealthcare->getSearchResultsFromUrl();
+		return craft()->apiHealthcare_queries->getSearchResultsFromUrl();
 	}
 
 	public function testRequest()

@@ -13,6 +13,15 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 0.2.0
+
+* Plugin caches Profession and Specialty search options to database for faster load times
+* Fixed issue where certain Profession and Specialty options with special characters were breaking search
+
+### 0.1.1
+
+* Added ability to search by Zip Code
+
 ### 0.1.0
 
 * Initial release

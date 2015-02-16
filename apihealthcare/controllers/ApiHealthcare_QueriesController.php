@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-class ApiHealthcareController extends BaseController
+class ApiHealthcare_QueriesController extends BaseController
 {
 	protected $allowAnonymous = array('actionGetSearchUrl');
 
@@ -11,17 +11,9 @@ class ApiHealthcareController extends BaseController
 
 		$query = new ApiHealthcare_QueryModel();
 
-		$query->profession = craft()->request->getPost('profession');
-		if ($query->profession)
-		{
-			$query->profession = urlencode($query->profession);
-		}
+		$query->professionSlug = craft()->request->getPost('profession');
 
-		$query->specialty  = craft()->request->getPost('specialty');
-		if ($query->specialty)
-		{
-			$query->specialty = urlencode($query->specialty);
-		}
+		$query->specialtySlug  = craft()->request->getPost('specialty');
 
 		$locationString = craft()->request->getPost('location');
 		if ($locationString)
@@ -40,7 +32,7 @@ class ApiHealthcareController extends BaseController
 			}
 		}
 
-		$searchUrl = craft()->apiHealthcare->getSearchUrl($query);
+		$searchUrl = craft()->apiHealthcare_queries->getSearchUrl($query);
 
 		if ($searchUrl)
 		{
@@ -48,7 +40,7 @@ class ApiHealthcareController extends BaseController
 		}
 		else
 		{
-			$this->redirect('/jobs');
+			$this->redirect('/404');
 		}
 	}
 }
