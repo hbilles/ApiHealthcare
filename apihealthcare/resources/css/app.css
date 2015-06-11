@@ -1,0 +1,20 @@
+@charset "utf-8";
+
+#apihealthcare-message {
+	//padding: 1em;
+	//box-shadow: 0 0 0 1px rgba(0, 0, 0, .05), 0 5px 25px -5px rgba(0, 0, 0, .15);
+	//box-shadow: 0 0 0 1px rgba(0, 0, 0, .05);
+}
+
+#apihealthcare-message p,
+#apihealthcare-noProfessions p,
+#apihealthcare-noSpecialties p,
+#apihealthcare-noPerDiemClients p {
+	margin: 0 0 1.5em !important;
+}
+
+#apihealthcare-noProfessions p,
+#apihealthcare-noSpecialties p,
+#apihealthcare-noPerDiemClients p {
+	font-style: italic;
+}

@@ -1,0 +1,11 @@
+{% extends '_layouts/cp' %}
+
+{# global plugin template resources should be loaded here #}
+
+{% set tabs = {
+	professions:    { label: "Professions"|t, url: url('apihealthcare') },
+	specialties:    { label: "Specialties"|t, url: url('apihealthcare/specialties') },
+	perDiemClients: { label: "Per-Diem Clients"|t, url: url('apihealthcare/per-diem-clients') },
+} %}
+
+{% includeCssResource 'apihealthcare/css/app.css' %}

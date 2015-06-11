@@ -1,0 +1,68 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% set title = 'Specialties Whitelist'|t %}
+{% set selectedTab = 'specialties' %}
+
+{% set content %}
+
+<div id="apihealthcare-message">
+	<p>The specialties listed here will be used as the basis for searching positions on API Healthcare's platform. If you don't see a specialty listed here, people won't be able to search for it.</p>
+</div>
+
+<div id="apihealthcare-noSpecialties">
+	<p>{{ "No specialties exist yet."|t }}</p>
+</div>
+
+{% if specialties|length %}
+<table id="apihealthcare-specialties" class="data fullwidth collapsible">
+	<thead class="sections">
+		<tr>
+			<th class="name">{{ "Name"|t }}</th>
+			<th class="slug">{{ "Slug"|t }}</th>
+			<th class="specId">{{ "Specialty Id"|t }}</th>
+			<th class="show">{{ "Show in search?"|t }}</th>
+		</tr>
+	</thead>
+
+	<tbody class="sections">
+	{% for specialty in specialties %}
+		<tr data-id="{{ specialty.id }}" data-name="{{ specialty.name }}">
+			<td>
+				<a href="{{ url('apihealthcare/specialties/' ~ specialty.id) }}">{{ specialty.name }}</a>
+			</td>
+			<td>
+				<code>{{ specialty.slug }}</code>
+			</td>
+			<td>
+				<code>{{ specialty.specId }}</code>
+			</td>
+			<td>
+				<span style="color: {% if specialty.show %}green;{% else %}#bbb;{% endif %}">{% if not specialty.show %}Not {% endif %}Searchable</span>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<p class="buttons">
+	<a href="{{ url('apihealthcare/specialties/edit-search') }}" class="btn submit search icon">{{ "Search Options"|t }}</a>
+</p>
+{% endif %}
+
+<p id="apihealthcare-updateSpecialties" class="buttons">
+	<a href="{{ url('apihealthcare/specialties/update') }}" class="btn submit">{{ "Update Specialties" }}</a>
+</p>
+<p id="apihealthcare-resetSpecialties" class="buttons">
+	<a href="{{ url('apihealthcare/specialties/reset') }}" class="btn submit">{{ "Reset Specialties" }}</a>
+</p>
+
+{% endset %}
+
+
+{% set js %}
+var adminTable = new Craft.AdminTable({
+	tableSelector: '#apihealthcare-specialties',
+	noObjectsSelector: '#apihealthcare-noSpecialties'
+});
+{% endset %}
+{% includeJs js %}

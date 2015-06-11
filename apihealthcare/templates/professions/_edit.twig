@@ -1,0 +1,68 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% import '_includes/forms' as forms %}
+
+{% set selectedTab = 'professions' %}
+
+{% set content %}
+
+<form id="apihealthcare-editProfession" action="" method="post" accept-charset="UTF-8">
+	<input type="hidden" name="action" value="apiHealthcare/options/saveProfession">
+	<input type="hidden" name="redirect" value="apihealthcare/professions">
+	{% if profession.id %}<input type="hidden" name="professionId" value="{{ profession.id }}">{% endif %}
+	
+	{{ forms.textField({
+		first: true,
+		label: 'Name'|t,
+		instructions: 'The name given this Profession in API Healthcare.'|t,
+		id: 'name',
+		name: 'name',
+		value: profession.name,
+		errors: profession.getErrors('name'),
+		autofocus: true,
+		required: true
+	}) }}
+
+	{{ forms.textField({
+		label: 'Slug'|t,
+		instructions: 'How this profession is referred to in search URLs.'|t,
+		id: 'slug',
+		class: 'code',
+		name: 'slug',
+		value: profession.slug,
+		errors: profession.getErrors('slug'),
+		required: true
+	}) }}
+
+	{# We don't want Craft to overwrite this #}
+	{{ forms.textField({
+		label: 'Certification ID'|t,
+		instructions: 'The ID given this Profession in API Healthcare.'|t,
+		id: 'certId',
+		name: 'certId',
+		value: profession.certId,
+		disabled: true
+	}) }}
+
+	{{ forms.checkbox({
+		label: 'Show in Search?'|t,
+		id: 'show',
+		name: 'show',
+		checked: profession.show,
+		errors: profession.getErrors('show')
+	}) }}
+
+	<hr>
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+	</div>
+</form>
+
+{% endset %}
+
+
+{% set js %}
+	{% if not profession.slug %}new Craft.HandleGenerator('#name', '#slug');{% endif %}
+{% endset %}
+{% includeJs js %}

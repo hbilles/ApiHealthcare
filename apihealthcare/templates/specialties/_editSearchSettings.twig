@@ -1,0 +1,63 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% import '_includes/forms' as forms %}
+
+{% set selectedTab = 'specialties' %}
+
+{% set content %}
+
+{% if specialties|length %}
+<form id="apihealthcare-editAllSpecialties" action="" method="post" accept-charset="UTF-8">
+	<input type="hidden" name="action" value="apiHealthcare/options/saveSpecialtySearchSettings">
+	<input type="hidden" name="redirect" value="apihealthcare/specialties">
+
+	<table id="apihealthcare-specialties" class="data fullwidth collapsible">
+		<thead class="sections">
+			<tr>
+				<th class="name">{{ "Name"|t }}</th>
+				<th class="slug">{{ "Slug"|t }}</th>
+				<th class="specId">{{ "Specialty Id"|t }}</th>
+				<th class="show">{{ "Show in search?"|t }}</th>
+			</tr>
+		</thead>
+
+		<tbody class="sections">
+		{% for specialty in specialties %}
+			<tr data-id="{{ specialty.id }}" data-name="{{ specialty.name }}">
+				<td>
+					{{ specialty.name }}
+				</td>
+				<td>
+					<code>{{ specialty.slug }}</code>
+				</td>
+				<td>
+					<code>{{ specialty.specId }}</code>
+				</td>
+				<td>
+					{{ forms.checkbox({
+						label: 'Searchable?'|t,
+						id: "specialties-" ~ specialty.id ~ "-show",
+						name: "specialties[" ~ specialty.id ~ "][show]",
+						checked: specialty.show
+					}) }}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+	</div>
+</form>
+
+{% else %}
+
+<div id="apihealthcare-noSpecialties">
+	<p>{{ "No specialties exist yet." }}</p>
+</div>
+
+{% endif %}
+
+{% endset %}
+

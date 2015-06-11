@@ -11,8 +11,8 @@ class ApiHealthcare_QueriesController extends BaseController
 
 		$query = new ApiHealthcare_QueryModel();
 
+		$query->jobTypeSlug    = craft()->request->getPost('jobType');
 		$query->professionSlug = craft()->request->getPost('profession');
-
 		$query->specialtySlug  = craft()->request->getPost('specialty');
 
 		$locationString = craft()->request->getPost('location');

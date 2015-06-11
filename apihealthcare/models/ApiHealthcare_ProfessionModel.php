@@ -11,6 +11,7 @@ class ApiHealthcare_ProfessionModel extends BaseModel
 			'slug'        => AttributeType::Slug,
 			'name'        => AttributeType::String,
 			'sortOrder'   => AttributeType::Number,
+			'show'        => AttributeType::Bool
 		);
 	}
 }

@@ -1,0 +1,61 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% set title = 'Per-Diem Client Whitelist'|t %}
+{% set selectedTab = 'perDiemClients' %}
+
+{% set content %}
+
+<div id="apihealthcare-message">
+	<p>The clients listed here will be used as the basis for searching through per-diem positions on API Healthcare's platform. This is done in order to filter out per-diem orders that are generated automatically by long-term orders in API Healthcare.</p>
+</div>
+
+<div id="apihealthcare-noPerDiemClients">
+	<p>{{ "No per-diem clients exist yet."|t }}</p>
+</div>
+
+{% if perDiemClients|length %}
+<table id="apihealthcare-perDiemClients" class="data fullwidth collapsible">
+	<thead class="sections">
+		<tr>
+			<th class="name">{{ "Name"|t }}</th>
+			<th class="clientId">{{ "Client Id"|t }}</th>
+			<th class="thin"></th>
+		</tr>
+	</thead>
+
+	<tbody class="sections">
+	{% for perDiemClient in perDiemClients %}
+		<tr data-id="{{ perDiemClient.id }}" data-name="{{ perDiemClient.name }}">
+			<td>
+				<a href="{{ url('apihealthcare/per-diem-clients/' ~ perDiemClient.id) }}">{{ perDiemClient.name }}</a>
+			</td>
+			<td>
+				<code>{{ perDiemClient.clientId }}</code>
+			</td>
+			<td class="thin">
+				<a href="" class="delete icon" title="{{ 'Delete'|t }}" role="button"></a>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+<p id="apihealthcare-newPerDiemClient" class="buttons">
+	<a href="{{ url('apihealthcare/per-diem-clients/new') }}" class="btn submit add icon">{{ "Add Client" }}</a>
+</p>
+
+
+{% endset %}
+
+
+{% set js %}
+var adminTable = new Craft.AdminTable({
+	tableSelector: '#apihealthcare-perDiemClients',
+	noObjectsSelector: '#apihealthcare-noPerDiemClients',
+	newObjectBtnSelector: '#apihealthcare-newPerDiemClient',
+	deleteAction: 'apiHealthcare/options/deletePerDiemClient',
+	confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}”?"|t }}'
+});
+{% endset %}
+{% includeJs js %}

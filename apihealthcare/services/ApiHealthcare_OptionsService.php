@@ -10,12 +10,40 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 	{
 		$professionRecords = ApiHealthcare_ProfessionRecord::model()->ordered()->findAll();
 
+		/* Don't do this as we are manually whitelisting Professions
 		if (!$professionRecords && $this->updateProfessionRecords())
 		{
 			$professionRecords = ApiHealthcare_ProfessionRecord::model()->ordered()->findAll();
 		}
+		*/
 
-		return ApiHealthcare_ProfessionModel::populateModels($professionRecords);
+		if ($professionRecords)
+		{
+			return ApiHealthcare_ProfessionModel::populateModels($professionRecords);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * @param string $professionId
+	 * @return ApiHealthcare_ProfessionModel
+	 */
+	public function getProfessionById($professionId)
+	{
+		if (!$professionId)
+		{
+			return false;
+		}
+
+		$professionRecord = ApiHealthcare_ProfessionRecord::model()->findById($professionId);
+
+		if ($professionRecord)
+		{
+			return ApiHealthcare_ProfessionModel::populateModel($professionRecord);
+		}
 	}
 
 	/**
@@ -40,11 +68,30 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 
 		return $professionRecord->name;
 	}
+	
+	/**
+	 * @return string
+	 */
+	public function getNextProfessionOrder()
+	{
+		$professions = $this->getAllProfessions();
+		$sortOrder = 0;
+
+		if ($professions)
+		{
+			foreach ($professions as $profession)
+			{
+				$sortOrder = $profession->sortOrder > $sortOrder ? $profession->sortOrder : $sortOrder;
+			}
+		}
+
+		return $sortOrder + 1;
+	}
 
 	/**
 	 * @return bool
 	 */
-	public function updateProfessionRecords()
+	public function updateProfessionRecords($reset = false)
 	{
 		$json = $this->_sendRequest('getCerts');
 
@@ -71,14 +118,15 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 						'certId' => $profession->certId
 					));
 
-					if (!$professionRecord)
+					if (!$professionRecord || $reset)
 					{
-						$professionRecord = new ApiHealthcare_ProfessionRecord();
+						$professionRecord = $professionRecord ? $professionRecord : new ApiHealthcare_ProfessionRecord();
+
+						$professionRecord->slug  = $profession->slug;
+						$professionRecord->name  = $profession->name;
 					}
 
 					$professionRecord->certId    = $profession->certId;
-					$professionRecord->slug      = $profession->slug;
-					$professionRecord->name      = $profession->name;
 					$professionRecord->sortOrder = $profession->sortOrder;
 
 					$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
@@ -104,6 +152,88 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 
 			return false;
 		}
+	}
+
+	/**
+	 * @param ApiHealthcare_ProfessionModel $profession
+	 */
+	public function saveProfession(ApiHealthcare_ProfessionModel $profession)
+	{
+		// get record if exists
+		if ($profession->id)
+		{
+			$professionRecord = ApiHealthcare_ProfessionRecord::model()->findById($profession->id);
+
+			if (!$professionRecord)
+			{
+				throw new Exception(Craft::t('No Profession exists with the ID "{id}"', array('id' => $profession->id)));
+			}
+		}
+		// else create new profession
+		else
+		{
+			$professionRecord = new ApiHealthcare_ProfessionRecord();
+		}
+
+		// set the profession's attributes
+		$professionRecord->certId    = $profession->certId;
+		$professionRecord->name      = $profession->name;
+		$professionRecord->slug      = $profession->slug;
+		$professionRecord->sortOrder = $profession->sortOrder;
+		$professionRecord->show      = (bool) $profession->show;
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// validate the profession
+			$professionRecord->validate();
+			$profession->addErrors($professionRecord->getErrors());
+
+			if (!$profession->hasErrors())
+			{
+				// save without running validation again
+				$professionRecord->save(false);
+
+				if ($transaction !== null) { $transaction->commit(); }
+
+				$profession->id = $professionRecord->id;
+
+				return true;
+			}
+			else
+			{
+				if ($transaction !== null) { $transaction->rollback(); }
+
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null) { $transaction->rollback(); }
+
+			throw $e;
+		}
+	}
+
+	/**
+	 * @param string $professionId
+	 */
+	public function deleteProfessionById($professionId)
+	{
+		if (!$professionId)
+		{
+			return false;
+		}
+
+		$professionRecord = ApiHealthcare_ProfessionRecord::model()->findById($professionId);
+		$professionModel  = ApiHealthcare_ProfessionModel::populateModel($professionRecord);
+
+		if (!$professionRecord)
+		{
+			return false;
+		}
+
+		return $professionRecord->delete();
 	}
 
 	/**
@@ -134,7 +264,7 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 	}
 
 	/**
-	 * @param number $id
+	 * @param ApiHealthcare_ProfessionModel $profession
 	 */
 	public function deleteProfession(ApiHealthcare_ProfessionModel $profession)
 	{
@@ -148,6 +278,10 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 		return $professionRecord->delete();
 	}
 
+
+
+
+
 	/**
 	 * @return array
 	 */
@@ -155,12 +289,33 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 	{
 		$specialtyRecords = ApiHealthcare_SpecialtyRecord::model()->ordered()->findAll();
 
+		/* Don't do this as we are manually whitelisting Specialties
 		if (!$specialtyRecords && $this->updateSpecialtyRecords())
 		{
 			$specialtyRecords = ApiHealthcare_SpecialtyRecord::model()->ordered()->findAll();
 		}
+		*/
 
 		return ApiHealthcare_SpecialtyModel::populateModels($specialtyRecords);
+	}
+
+	/**
+	 * @param string $specialtyId
+	 * @return ApiHealthcare_SpecialtyModel
+	 */
+	public function getSpecialtyById($specialtyId)
+	{
+		if (!$specialtyId)
+		{
+			return false;
+		}
+
+		$specialtyRecord = ApiHealthcare_SpecialtyRecord::model()->findById($specialtyId);
+
+		if ($specialtyRecord)
+		{
+			return ApiHealthcare_SpecialtyModel::populateModel($specialtyRecord);
+		}
 	}
 
 	/**
@@ -189,7 +344,7 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 	/**
 	 * @return bool
 	 */
-	public function updateSpecialtyRecords()
+	public function updateSpecialtyRecords($reset = false)
 	{
 		$json = $this->_sendRequest('getSpecs');
 
@@ -215,14 +370,15 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 						'specId' => $specialty->specId
 					));
 
-					if (!$specialtyRecord)
+					if (!$specialtyRecord || $reset)
 					{
-						$specialtyRecord = new ApiHealthcare_SpecialtyRecord();
+						$specialtyRecord = $specialtyRecord ? $specialtyRecord : new ApiHealthcare_SpecialtyRecord();
+
+						$specialtyRecord->slug  = $specialty->slug;
+						$specialtyRecord->name  = $specialty->name;
 					}
 
-					$specialtyRecord->specId    = $specialty->specId;
-					$specialtyRecord->slug      = $specialty->slug;
-					$specialtyRecord->name      = $specialty->name;
+					$specialtyRecord->specId = $specialty->specId;
 
 					$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 					try
@@ -246,6 +402,66 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 			}
 
 			return false;
+		}
+	}
+
+	/**
+	 * @param ApiHealthcare_SpecialtyModel $specialty
+	 */
+	public function saveSpecialty(ApiHealthcare_SpecialtyModel $specialty)
+	{
+		// get record if exists
+		if ($specialty->id)
+		{
+			$specialtyRecord = ApiHealthcare_SpecialtyRecord::model()->findById($specialty->id);
+
+			if (!$specialtyRecord)
+			{
+				throw new Exception(Craft::t('No Specialty exists with the ID "{id}"', array('id' => $specialty->id)));
+			}
+		}
+		// else create new specialty
+		else
+		{
+			$specialtyRecord = new ApiHealthcare_SpecialtyRecord();
+		}
+
+		// set the specialty's attributes
+		$specialtyRecord->specId    = $specialty->specId;
+		$specialtyRecord->name      = $specialty->name;
+		$specialtyRecord->slug      = $specialty->slug;
+		$specialtyRecord->show      = (bool) $specialty->show;
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// validate the specialty
+			$specialtyRecord->validate();
+			$specialty->addErrors($specialtyRecord->getErrors());
+
+			if (!$specialty->hasErrors())
+			{
+				// save without running validation again
+				$specialtyRecord->save(false);
+
+				if ($transaction !== null) { $transaction->commit(); }
+
+				$specialty->id = $specialtyRecord->id;
+
+				return true;
+			}
+			else
+			{
+				if ($transaction !== null) { $transaction->rollback(); }
+
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null) { $transaction->rollback(); }
+
+			throw $e;
 		}
 	}
 
@@ -289,5 +505,129 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 		$specialtyRecord = ApiHealthcare_SpecialtyRecord::model()->findById($specialty->id);
 
 		return $specialtyRecord->delete();
+	}
+
+
+
+
+
+	/**
+	 * @return array
+	 */
+	public function getAllPerDiemClients()
+	{
+		$perDiemClientRecords = ApiHealthcare_PerDiemClientRecord::model()->ordered()->findAll();
+
+		if ($perDiemClientRecords)
+		{
+			return ApiHealthcare_PerDiemClientModel::populateModels($perDiemClientRecords);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * @param string $perDiemClientId
+	 * @return ApiHealthcare_PerDiemClientModel
+	 */
+	public function getPerDiemClientById($perDiemClientId)
+	{
+		if (!$perDiemClientId)
+		{
+			return false;
+		}
+
+		$perDiemClientRecord = ApiHealthcare_PerDiemClientRecord::model()->findById($perDiemClientId);
+
+		if ($perDiemClientRecord)
+		{
+			return ApiHealthcare_PerDiemClientModel::populateModel($perDiemClientRecord);
+		}
+	}
+
+	/**
+	 * @param string $perDiemClientId
+	 */
+	public function deletePerDiemClientById($perDiemClientId)
+	{
+		$perDiemClient = $this->getPerDiemClientById($perDiemClientId);
+
+		if (!$perDiemClientId || !$perDiemClient) { return false; }
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// delete client
+			$affectedRows = craft()->db->createCommand()->delete('apihealthcare_perdiemclients', array('id' => $perDiemClientId));
+
+			if ($transaction !== null) { $transaction->commit(); }
+			return (bool) $affectedRows;
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null) { $transaction->rollback(); }
+			
+			throw $e;
+		}
+	}
+
+	/**
+	 * @param ApiHealthcare_PerDiemClientModel $perDiemClient
+	 */
+	public function savePerDiemClient(ApiHealthcare_PerDiemClientModel $perDiemClient)
+	{
+		// get record if exists
+		if ($perDiemClient->id)
+		{
+			$perDiemClientRecord = ApiHealthcare_PerDiemClientRecord::model()->findById($perDiemClient->id);
+
+			if (!$perDiemClientRecord)
+			{
+				throw new Exception(Craft::t('No Client exists with the ID "{id}"', array('id' => $perDiemClient->id)));
+			}
+		}
+		// else create new client
+		else
+		{
+			$perDiemClientRecord = new ApiHealthcare_PerDiemClientRecord();
+		}
+
+		// set the client's attributes
+		$perDiemClientRecord->name     = $perDiemClient->name;
+		$perDiemClientRecord->clientId = $perDiemClient->clientId;
+
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// validate the client
+			$perDiemClientRecord->validate();
+			$perDiemClient->addErrors($perDiemClientRecord->getErrors());
+
+			if (!$perDiemClient->hasErrors())
+			{
+				// save without running validation again
+				$perDiemClientRecord->save(false);
+
+				if ($transaction !== null) { $transaction->commit(); }
+
+				$perDiemClient->id = $perDiemClientRecord->id;
+
+				return true;
+			}
+			else
+			{
+				if ($transaction !== null) { $transaction->rollback(); }
+
+				return false;
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null) { $transaction->rollback(); }
+
+			throw $e;
+		}
 	}
 }

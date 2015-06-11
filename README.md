@@ -13,6 +13,14 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 0.3.0
+
+* Added whitelist for Professions in CP
+* Added whitelist for Specialties in CP
+* Added whitelist for Per-Diem Clients in CP
+* Added Long-Term orders to search results
+* Need to implement whitelists in search results
+
 ### 0.2.0
 
 * Plugin caches Profession and Specialty search options to database for faster load times

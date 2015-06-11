@@ -1,0 +1,68 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% set title = 'Professions Whitelist'|t %}
+{% set selectedTab = 'professions' %}
+
+{% set content %}
+
+<div id="apihealthcare-message">
+	<p>The professions listed here will be used as the basis for searching positions on API Healthcare's platform. If you don't see a profession listed here, people won't be able to search for it.</p>
+</div>
+
+<div id="apihealthcare-noProfessions">
+	<p>{{ "No professions (certifications) exist yet."|t }}</p>
+</div>
+
+{% if professions|length %}
+<table id="apihealthcare-professions" class="data fullwidth collapsible">
+	<thead class="sections">
+		<tr>
+			<th class="name">{{ "Name"|t }}</th>
+			<th class="slug">{{ "Slug"|t }}</th>
+			<th class="certId">{{ "Certification Id"|t }}</th>
+			<th class="show">{{ "Show in search?"|t }}</th>
+		</tr>
+	</thead>
+
+	<tbody class="sections">
+	{% for profession in professions %}
+		<tr data-id="{{ profession.id }}" data-name="{{ profession.name }}">
+			<td>
+				<a href="{{ url('apihealthcare/professions/' ~ profession.id) }}">{{ profession.name }}</a>
+			</td>
+			<td>
+				<code>{{ profession.slug }}</code>
+			</td>
+			<td>
+				<code>{{ profession.certId }}</code>
+			</td>
+			<td>
+				<span style="color: {% if profession.show %}green;{% else %}#bbb;{% endif %}">{% if not profession.show %}Not {% endif %}Searchable</span>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<p class="buttons">
+	<a href="{{ url('apihealthcare/professions/edit-search') }}" class="btn submit search icon">{{ "Search Options"|t }}</a>
+</p>
+{% endif %}
+
+<p id="apihealthcare-updateProfessions" class="buttons">
+	<a href="{{ url('apihealthcare/professions/update') }}" class="btn submit">{{ "Update Professions" }}</a>
+</p>
+<p id="apihealthcare-resetProfessions" class="buttons">
+	<a href="{{ url('apihealthcare/professions/reset') }}" class="btn submit">{{ "Reset Professions" }}</a>
+</p>
+
+{% endset %}
+
+
+{% set js %}
+var adminTable = new Craft.AdminTable({
+	tableSelector: '#apihealthcare-professions',
+	noObjectsSelector: '#apihealthcare-noProfessions'
+});
+{% endset %}
+{% includeJs js %}

@@ -21,6 +21,7 @@ class ApiHealthcare_ProfessionRecord extends BaseRecord
 			'slug'        => array(AttributeType::Slug, 'required' => true),
 			'name'        => array(AttributeType::String, 'required' => true),
 			'sortOrder'   => array(AttributeType::Number, 'required' => true),
+			'show'        => AttributeType::Bool
 		);
 	}
 

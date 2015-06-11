@@ -20,6 +20,7 @@ class ApiHealthcare_SpecialtyRecord extends BaseRecord
 			'specId'      => array(AttributeType::Number, 'required' => true),
 			'slug'        => array(AttributeType::Slug, 'required' => true),
 			'name'        => array(AttributeType::String, 'required' => true),
+			'show'        => AttributeType::Bool
 		);
 	}
 

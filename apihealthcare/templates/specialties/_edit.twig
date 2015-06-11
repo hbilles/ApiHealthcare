@@ -1,0 +1,69 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% import '_includes/forms' as forms %}
+
+{% set selectedTab = 'specialties' %}
+
+{% set content %}
+
+<form id="apihealthcare-editSpecialty" action="" method="post" accept-charset="UTF-8">
+	<input type="hidden" name="action" value="apiHealthcare/options/saveSpecialty">
+	<input type="hidden" name="redirect" value="apihealthcare/specialties">
+	{% if specialty.id %}<input type="hidden" name="specialtyId" value="{{ specialty.id }}">{% endif %}
+	
+	{{ forms.textField({
+		first: true,
+		label: 'Name'|t,
+		instructions: 'The name given this Specialty in API Healthcare.'|t,
+		id: 'name',
+		name: 'name',
+		value: specialty.name,
+		errors: specialty.getErrors('name'),
+		autofocus: true,
+		required: true
+	}) }}
+
+	{{ forms.textField({
+		label: 'Slug'|t,
+		instructions: 'How this specialty is referred to in search URLs.'|t,
+		id: 'slug',
+		class: 'code',
+		name: 'slug',
+		value: specialty.slug,
+		errors: specialty.getErrors('slug'),
+		required: true
+	}) }}
+
+	{# We don't want Craft to overwrite this #}
+	{{ forms.textField({
+		label: 'Specialty ID'|t,
+		instructions: 'The ID given this Specialty in API Healthcare.'|t,
+		id: 'specId',
+		name: 'specId',
+		value: specialty.specId,
+		errors: specialty.getErrors('specId'),
+		disabled: true
+	}) }}
+
+	{{ forms.checkbox({
+		label: 'Show in Search?'|t,
+		id: 'show',
+		name: 'show',
+		checked: specialty.show,
+		errors: specialty.getErrors('show')
+	}) }}
+
+	<hr>
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+	</div>
+</form>
+
+{% endset %}
+
+
+{% set js %}
+	{% if not specialty.slug %}new Craft.HandleGenerator('#name', '#slug');{% endif %}
+{% endset %}
+{% includeJs js %}

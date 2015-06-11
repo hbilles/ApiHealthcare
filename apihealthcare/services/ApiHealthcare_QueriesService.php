@@ -16,9 +16,11 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		// filter params further filter API response
 		$params['filter']  = array();
 
-		$params['request']['shiftStart']    = (isset($query->shiftStart)) ? $query->shiftStart : null;
+		$params['request']['shiftStart']    = (isset($query->dateStart)) ? $query->dateStart : null;
+		$params['request']['dateStart']     = (isset($query->dateStart)) ? $query->dateStart : null;
 		$params['request']['status']        = (isset($query->status))     ? $query->status : null;
-		$params['request']['orderBy1']      = 'shiftStartTime';
+		//$params['request']['orderBy1']      = 'shiftStartTime';
+		//$params['request']['orderBy1']      = 'dateStart';
 		$params['request']['orderBy2']      = 'state';
 		$params['request']['orderBy3']      = 'city';
 
@@ -27,14 +29,16 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			$queryUriArray = explode('/', $queryUri);
 
 			// NOTE: the first spot in $queryUriArray is empty, so start from index '1'
-			$params['filter']['orderType']      = ($queryUriArray[1] !== 'all') ? urldecode($queryUriArray[1]) : null;
+			$params['jobTypeSlug']              = ($queryUriArray[1] !== 'all') ? urldecode($queryUriArray[1]) : null;
 			$params['request']['certification'] = ($queryUriArray[2] !== 'all') ? craft()->apiHealthcare_options->getProfessionNameBySlug($queryUriArray[2]) : null;
 			$params['request']['specialty']     = ($queryUriArray[3] !== 'all') ? craft()->apiHealthcare_options->getSpecialtyNameBySlug($queryUriArray[3]) : null;
 			$params['request']['clientStateIn'] = ($queryUriArray[4] !== 'all') ? urldecode($queryUriArray[4]) : null;
 			$params['request']['clientCityIn']  = ($queryUriArray[5] !== 'all') ? urldecode($queryUriArray[5]) : null;
-			$params['filter']['zipCode']        = ($queryUriArray[6] !== 'all') ? urldecode($queryUriArray[6]) : null;
+			// NOTE: client asked not to filter by Zip
+			//$params['filter']['zipCode']        = ($queryUriArray[6] !== 'all') ? urldecode($queryUriArray[6]) : null;
+			$params['filter']['zipCode'] = null;
 
-			if (!$params['filter']['orderType'] && !$params['filter']['zipCode'])
+			if (!$params['filter']['zipCode'])
 			{
 				$params['filter'] = null;
 			}
@@ -78,15 +82,17 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 				{
 					$result = new ApiHealthcare_QueryModel();
 
-					$result->orderType   = $item['orderType'];
+					//$result->jobType   = $item['jobType'];
 					$result->profession  = $item['orderCertification'];
 					$result->specialty   = $item['orderSpecialty'];
 					$result->state       = $item['state'];
 					$result->city        = $item['city'];
 					$result->zipCode     = $item['zipCode'];
-					$result->shiftStart  = $item['shiftStartTime'];
+					//$result->dateStart   = $item['shiftStartTime'];
+					$result->dateStart   = (isset($item['dateStart'])) ? $item['dateStart'] : $item['shiftStartTime'];
 					$result->status      = $item['status'];
-					$result->jobId       = $item['orderId'];
+					$result->jobId       = (isset($item['orderId'])) ? $item['orderId'] : $item['lt_orderId'];
+					$result->jobType     = (isset($item['orderId'])) ? 'Per Diem' : 'Travel & Local Contracts';
 					$result->clientName  = $item['clientName'];
 					$result->description = $item['note'];
 
@@ -101,6 +107,16 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @param array $a
+	 * @param array $b
+	 * @return bool
+	 */
+	private function _sortByDateStart($a, $b)
+	{
+		return strcmp($a->dateStart, $b->dateStart);
+	}
+
+	/**
 	 * @param ApiHealthcare_QueryModel $query
 	 * @return string
 	 */
@@ -111,7 +127,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			return false;
 		}
 
-		$query->orderType  = 'all';
+		if (!$query->jobTypeSlug)    { $query->jobTypeSlug = 'all'; }
 		if (!$query->professionSlug) { $query->professionSlug = 'all'; }
 		if (!$query->specialtySlug)  { $query->specialtySlug = 'all'; }
 		if (!$query->state)          { $query->state = 'all'; }
@@ -119,7 +135,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		if (!$query->zipCode)        { $query->zipCode = 'all'; }
 
 		$searchUri = '/'
-			. $query->orderType . '/'
+			. $query->jobTypeSlug . '/'
 			. $query->professionSlug . '/'
 			. $query->specialtySlug . '/'
 			. $query->state . '/'
@@ -137,7 +153,8 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	public function getSearchResultsFromUrl()
 	{
 		$query = new ApiHealthcare_QueryModel();
-		$query->shiftStart = date('Y-m-d');
+		//$query->dateStart  = date('Y-m-d');
+		$query->dateStart = '2015-05-01';
 		$query->status     = 'open';
 
 		$queryString = craft()->request->queryStringWithoutPath;
@@ -161,12 +178,63 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			{
 				$queryUri = $parts[1];
 				$params = $this->_prepSearchParams($query, $queryUri);
-				$jsonString = $this->_sendRequest('getOrders', $params['request']);
-				$results = $this->_prepResults($jsonString, $params['filter']);
+
+				// Search Per Diem
+				if ($params['jobTypeSlug'] === 'per-diem')
+				{
+					$params['request']['orderBy1'] = 'shiftStartTime';
+					$jsonString = $this->_sendRequest('getOrders', $params['request']);
+
+					$results = $this->_prepResults($jsonString, $params['filter']);
+				}
+				// Search Long-Term
+				else if ($params['jobTypeSlug'] === 'travel-contracts')
+				{
+					$params['request']['orderBy1'] = 'dateStart';
+					$jsonString = $this->_sendRequest('getLtOrders', $params['request']);
+
+					$results = $this->_prepResults($jsonString, $params['filter']);
+				}
+				// Search Everything
+				else {
+					// Parse Orders
+					$params['request']['orderBy1'] = 'shiftStartTime';
+					$jsonOrders = $this->_sendRequest('getOrders', $params['request']);
+
+					$resultsOrders = $this->_prepResults($jsonOrders, $params['filter']);
+
+
+					// Parse Long-Term Orders
+					$params['request']['orderBy1'] = 'dateStart';
+					$jsonLtOrders = $this->_sendRequest('getLtOrders', $params['request']);
+
+					$resultsLtOrders = $this->_prepResults($jsonLtOrders, $params['filter']);
+
+
+					// Merge & Sort Orders & Long-Term Orders
+					$results = array_merge($resultsOrders, $resultsLtOrders);
+					//usort($results, "$this->_sortByDateStart");
+					usort($results, function($a, $b) {
+						return strcmp($a->dateStart, $b->dateStart);
+					});
+				}
 			}
 		}
 		
 		return $results;
+	}
+
+	/**
+	 * @param string $id
+	 * @return array
+	 */
+	public function getLtOrderById($id)
+	{
+		$params = array();
+		$params['ltOrderId'] = $id;
+		$jsonString = $this->_sendRequest('getLtOrders', $params);
+
+		return $jsonString;
 	}
 
 }

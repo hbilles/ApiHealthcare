@@ -18,6 +18,11 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_queries->getSearchResultsFromUrl();
 	}
 
+	public function getLtOrderById($id)
+	{
+		return craft()->apiHealthcare_queries->getLtOrderById($id);
+	}
+
 	public function testRequest()
 	{
 		$queryString = craft()->request->queryString;
