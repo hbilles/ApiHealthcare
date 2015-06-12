@@ -8,9 +8,19 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_options->getAllProfessions();
 	}
 
+	public function getWhitelistedProfessions()
+	{
+		return craft()->apiHealthcare_options->getWhitelistedProfessions();
+	}
+
 	public function getAllSpecialties()
 	{
 		return craft()->apiHealthcare_options->getAllSpecialties();
+	}
+
+	public function getWhitelistedSpecialties()
+	{
+		return craft()->apiHealthcare_options->getWhitelistedSpecialties();
 	}
 
 	public function getSearchResultsFromUrl()

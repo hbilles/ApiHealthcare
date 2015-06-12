@@ -28,6 +28,25 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getWhitelistedProfessions()
+	{
+		$professionRecords = ApiHealthcare_ProfessionRecord::model()->ordered()->findAllByAttributes(array(
+			'show' => true
+		));
+
+		if ($professionRecords)
+		{
+			return ApiHealthcare_ProfessionModel::populateModels($professionRecords);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * @param string $professionId
 	 * @return ApiHealthcare_ProfessionModel
 	 */
@@ -300,6 +319,25 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getWhitelistedSpecialties()
+	{
+		$specialtyRecords = ApiHealthcare_SpecialtyRecord::model()->ordered()->findAllByAttributes(array(
+			'show' => true
+		));
+
+		if ($specialtyRecords)
+		{
+			return ApiHealthcare_SpecialtyModel::populateModels($specialtyRecords);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * @param string $specialtyId
 	 * @return ApiHealthcare_SpecialtyModel
 	 */
@@ -315,6 +353,36 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 		if ($specialtyRecord)
 		{
 			return ApiHealthcare_SpecialtyModel::populateModel($specialtyRecord);
+		}
+	}
+
+	/**
+	 * @return comma-delimited string of specialty names
+	 */
+	public function getWhitelistedSpecialtyNames()
+	{
+		$specialties = $this->getWhitelistedSpecialties();
+
+		if ($specialties)
+		{
+			$count = count($specialties);
+			$specialtyNames = '';
+
+			for ($i = 0; $i < $count; ++$i)
+			{
+				$specialtyNames .= $specialties[$i]->name;
+
+				if ($i + 1 !== $count)
+				{
+					$specialtyNames .= ',';
+				}
+			}
+
+			return $specialtyNames;
+		}
+		else
+		{
+			return null;
 		}
 	}
 
@@ -544,6 +612,36 @@ class ApiHealthcare_OptionsService extends ApiHealthcare_BaseService
 		if ($perDiemClientRecord)
 		{
 			return ApiHealthcare_PerDiemClientModel::populateModel($perDiemClientRecord);
+		}
+	}
+
+	/**
+	 * @return comma-delimited string of clientIds
+	 */
+	public function getPerDiemClientClientIds()
+	{
+		$perDiemClients = $this->getAllPerDiemClients();
+
+		if ($perDiemClients)
+		{
+			$count = count($perDiemClients);
+			$clientIds = '';
+
+			for ($i = 0; $i < $count; ++$i)
+			{
+				$clientIds .= $perDiemClients[$i]->clientId;
+
+				if ($i + 1 !== $count)
+				{
+					$clientIds .= ',';
+				}
+			}
+
+			return $clientIds;
+		}
+		else
+		{
+			return null;
 		}
 	}
 

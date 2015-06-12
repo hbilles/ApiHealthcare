@@ -11,6 +11,7 @@
 	<input type="hidden" name="redirect" value="apihealthcare/specialties">
 	{% if specialty.id %}<input type="hidden" name="specialtyId" value="{{ specialty.id }}">{% endif %}
 	
+	{# We don't want Craft to overwrite this #}
 	{{ forms.textField({
 		first: true,
 		label: 'Name'|t,
@@ -19,8 +20,7 @@
 		name: 'name',
 		value: specialty.name,
 		errors: specialty.getErrors('name'),
-		autofocus: true,
-		required: true
+		disabled: true
 	}) }}
 
 	{{ forms.textField({

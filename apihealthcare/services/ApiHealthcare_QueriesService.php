@@ -13,14 +13,16 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		$params = array();
 		// request params get sent to API
 		$params['request'] = array();
-		// filter params further filter API response
+		// filter params further filter API response to see if a returned value simply equals param value
 		$params['filter']  = array();
+		// check params are boolean triggers for custom checks to determine if a result should be returned
+		$params['check'] = array();
 
-		$params['request']['shiftStart']    = (isset($query->dateStart)) ? $query->dateStart : null;
-		$params['request']['dateStart']     = (isset($query->dateStart)) ? $query->dateStart : null;
-		$params['request']['status']        = (isset($query->status))     ? $query->status : null;
-		//$params['request']['orderBy1']      = 'shiftStartTime';
-		//$params['request']['orderBy1']      = 'dateStart';
+		// Doesn't seem like Advantage keeps job dates up-to-date so don't use that as parameter
+		//$params['request']['shiftStart']    = (isset($query->dateStart)) ? $query->dateStart : null;
+		//$params['request']['dateStart']     = (isset($query->dateStart)) ? $query->dateStart : null;
+		$params['request']['status']        = (isset($query->status))    ? $query->status : null;
+		// We'll set orderBy1 in _getRequest()
 		$params['request']['orderBy2']      = 'state';
 		$params['request']['orderBy3']      = 'city';
 
@@ -31,12 +33,22 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			// NOTE: the first spot in $queryUriArray is empty, so start from index '1'
 			$params['jobTypeSlug']              = ($queryUriArray[1] !== 'all') ? urldecode($queryUriArray[1]) : null;
 			$params['request']['certification'] = ($queryUriArray[2] !== 'all') ? craft()->apiHealthcare_options->getProfessionNameBySlug($queryUriArray[2]) : null;
-			$params['request']['specialty']     = ($queryUriArray[3] !== 'all') ? craft()->apiHealthcare_options->getSpecialtyNameBySlug($queryUriArray[3]) : null;
+			$params['request']['specialty']     = ($queryUriArray[3] !== 'all') ? craft()->apiHealthcare_options->getSpecialtyNameBySlug($queryUriArray[3]) : craft()->apiHealthcare_options->getWhitelistedSpecialtyNames();
 			$params['request']['clientStateIn'] = ($queryUriArray[4] !== 'all') ? urldecode($queryUriArray[4]) : null;
 			$params['request']['clientCityIn']  = ($queryUriArray[5] !== 'all') ? urldecode($queryUriArray[5]) : null;
 			// NOTE: client asked not to filter by Zip
 			//$params['filter']['zipCode']        = ($queryUriArray[6] !== 'all') ? urldecode($queryUriArray[6]) : null;
 			$params['filter']['zipCode'] = null;
+
+			
+			if (!$params['request']['certification'])
+			{
+				$params['check']['certification'] = true;
+			}
+			else
+			{
+				$params['check'] = null;
+			}
 
 			if (!$params['filter']['zipCode'])
 			{
@@ -52,12 +64,15 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	 * @param array $params
 	 * @return array containing multiple ApiHealthcare_QueryModels
 	 */
-	private function _prepResults($jsonString, $params = null)
+	private function _prepResults($jsonString, $filters = null, $checks = null)
 	{
 		if (!$jsonString)
 		{
 			return false;
 		}
+
+		// set variable placeholder for certification checks
+		$whitelistedProfessions = false;
 
 		$results = array();
 		$json = stripslashes($jsonString);
@@ -69,12 +84,27 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			{
 				$match = true;
 
-				// if filter params exist, test against filters
-				if (is_array($params) && !empty($params))
+				// if filters params exist, test against filters
+				if (is_array($filters) && !empty($filters))
 				{
-					foreach($params as $key => $value)
+					foreach($filters as $key => $value)
 					{
 						$match = ($item[$key] === $value) ? true : false;
+					}
+				}
+
+				// if checks params exist, test against checks
+				if (is_array($checks) && !empty($checks))
+				{
+					if (isset($checks['certification']) && $checks['certification'])
+					{
+						$whitelistedProfessions = $whitelistedProfessions ? $whitelistedProfessions : craft()->apiHealthcare_options->getWhitelistedProfessions();
+
+						foreach ($whitelistedProfessions as $whitelistedProfession)
+						{
+							$match = ($item['orderCertification'] === $whitelistedProfession->name) ? true : false;
+							if ($match) { break; }
+						}
 					}
 				}
 
@@ -107,13 +137,30 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	}
 
 	/**
-	 * @param array $a
-	 * @param array $b
-	 * @return bool
+	 * @param string $type
+	 * @param array $params
+	 * @return array containing multiple ApiHealthcare_QueryModels
 	 */
-	private function _sortByDateStart($a, $b)
+	private function _getResults($type, $params)
 	{
-		return strcmp($a->dateStart, $b->dateStart);
+		if (!$type || !$params)
+		{
+			return false;
+		}
+
+		if ($type === 'getOrders')
+		{
+			$params['request']['orderBy1'] = 'shiftStartTime';
+			$params['request']['clientId'] = craft()->apiHealthcare_options->getPerDiemClientClientIds();
+		}
+		else if ($type === 'getLtOrders')
+		{
+			$params['request']['orderBy1'] = 'dateStart';
+		}
+		
+		$jsonString = $this->_sendRequest($type, $params['request']);
+
+		return $this->_prepResults($jsonString, $params['filter'], $params['check']);
 	}
 
 	/**
@@ -153,8 +200,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	public function getSearchResultsFromUrl()
 	{
 		$query = new ApiHealthcare_QueryModel();
-		//$query->dateStart  = date('Y-m-d');
-		$query->dateStart = '2015-05-01';
+		$query->dateStart  = date('Y-m-d');
 		$query->status     = 'open';
 
 		$queryString = craft()->request->queryStringWithoutPath;
@@ -163,12 +209,18 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		$params = array();
 		$results = null;
 
+		//return craft()->apiHealthcare_options->getWhitelistedSpecialtyNames();
+
 
 		if ($queryString === 'show-all=true')
 		{
 			$params = $this->_prepSearchParams($query);
-			$jsonString = $this->_sendRequest('getOrders', $params['request']);
-			$results = $this->_prepResults($jsonString);
+			
+			// Parse Orders
+			$resultsOrders = $this->_getResults('getOrders', $params);
+
+			// Parse Long-Term Orders
+			$resultsLtOrders = $this->_getResults('getLtOrders', $params);
 		}
 		else
 		{
@@ -182,43 +234,40 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 				// Search Per Diem
 				if ($params['jobTypeSlug'] === 'per-diem')
 				{
-					$params['request']['orderBy1'] = 'shiftStartTime';
-					$jsonString = $this->_sendRequest('getOrders', $params['request']);
-
-					$results = $this->_prepResults($jsonString, $params['filter']);
+					$results = $this->_getResults('getOrders', $params);
 				}
 				// Search Long-Term
 				else if ($params['jobTypeSlug'] === 'travel-contracts')
 				{
-					$params['request']['orderBy1'] = 'dateStart';
-					$jsonString = $this->_sendRequest('getLtOrders', $params['request']);
-
-					$results = $this->_prepResults($jsonString, $params['filter']);
+					$results = $this->_getResults('getLtOrders', $params);
 				}
 				// Search Everything
-				else {
+				else
+				{
 					// Parse Orders
-					$params['request']['orderBy1'] = 'shiftStartTime';
-					$jsonOrders = $this->_sendRequest('getOrders', $params['request']);
-
-					$resultsOrders = $this->_prepResults($jsonOrders, $params['filter']);
-
+					$resultsOrders = $this->_getResults('getOrders', $params);
 
 					// Parse Long-Term Orders
-					$params['request']['orderBy1'] = 'dateStart';
-					$jsonLtOrders = $this->_sendRequest('getLtOrders', $params['request']);
-
-					$resultsLtOrders = $this->_prepResults($jsonLtOrders, $params['filter']);
-
-
-					// Merge & Sort Orders & Long-Term Orders
-					$results = array_merge($resultsOrders, $resultsLtOrders);
-					//usort($results, "$this->_sortByDateStart");
-					usort($results, function($a, $b) {
-						return strcmp($a->dateStart, $b->dateStart);
-					});
+					$resultsLtOrders = $this->_getResults('getLtOrders', $params);
 				}
 			}
+		}
+
+		if (isset($resultsOrders) && isset($resultsLtOrders))
+		{
+			// Merge & Sort Orders & Long-Term Orders
+			$results = array_merge($resultsOrders, $resultsLtOrders);
+			usort($results, function($a, $b) {
+				return strcmp($a->dateStart, $b->dateStart);
+			});
+		}
+		else if (isset($resultsOrders))
+		{
+			$results = $resultsOrders;
+		}
+		else if (isset($resultsLtOrders))
+		{
+			$results = $resultsLtOrders;
 		}
 		
 		return $results;

@@ -10,8 +10,16 @@ To install Perform, follow these steps:
 1.  Upload the apihealthcare folder to your craft/plugins/ folder.
 2.  Go to Settings > Plugins from your Craft control panel and enable the API Healthcare plugin.
 3.  Navigate to the API Healthcare plugin settings page, and configure the account settings.
+4.  Navigate to API Healthcare -> Professions and click "Update Professions".
+5.  Navigate to API Healthcare -> Specialties and click "Update Specialties".
+6.  Navigate to API Healthcare -> Per-Diem Clients to add whitelisted clients.
 
 ## Changelog
+
+### 0.3.1
+
+* Implemented whitelists in search results
+* Disabled ability to change Profession and Specialty names as they are used to filter search results
 
 ### 0.3.0
 

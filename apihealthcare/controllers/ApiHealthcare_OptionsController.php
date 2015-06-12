@@ -71,7 +71,7 @@ class ApiHealthcare_OptionsController extends BaseController
 
 		// save posted data to profession model
 		//$profession->certId    = craft()->request->getPost('certId');
-		$profession->name      = craft()->request->getPost('name');
+		//$profession->name      = craft()->request->getPost('name');
 		$profession->slug      = craft()->request->getPost('slug');
 		$profession->show      = (bool) craft()->request->getPost('show');
 
@@ -220,7 +220,7 @@ class ApiHealthcare_OptionsController extends BaseController
 
 		// save posted data to specialty model
 		//$specialty->specId    = craft()->request->getPost('specId');
-		$specialty->name      = craft()->request->getPost('name');
+		//$specialty->name      = craft()->request->getPost('name');
 		$specialty->slug      = craft()->request->getPost('slug');
 		$specialty->show      = (bool) craft()->request->getPost('show');
 
