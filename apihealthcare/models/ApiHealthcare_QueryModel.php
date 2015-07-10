@@ -20,6 +20,7 @@ class ApiHealthcare_QueryModel extends BaseModel
 			'status'         => AttributeType::String,
 			'jobId'          => AttributeType::Number,
 			'clientName'     => AttributeType::String,
+			'isHotJob'       => AttributeType::Bool,
 			'description'    => AttributeType::String,
 		);
 	}

@@ -17,14 +17,17 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		$params['filter']  = array();
 		// check params are boolean triggers for custom checks to determine if a result should be returned
 		$params['check'] = array();
+		// by default, we will need to check the returned results against the certification whitelist later
+		$params['check']['certification'] = true;
 
+		$params['request']['specialty']     = craft()->apiHealthcare_specialties->getWhitelistedNames();
 		// Doesn't seem like Advantage keeps job dates up-to-date so don't use that as parameter
 		//$params['request']['shiftStart']    = (isset($query->dateStart)) ? $query->dateStart : null;
 		//$params['request']['dateStart']     = (isset($query->dateStart)) ? $query->dateStart : null;
 		$params['request']['status']        = (isset($query->status))    ? $query->status : null;
 		// We'll set orderBy1 in _getRequest()
-		$params['request']['orderBy2']      = 'state';
-		$params['request']['orderBy3']      = 'city';
+		//$params['request']['orderBy2']      = 'state';
+		//$params['request']['orderBy3']      = 'city';
 
 		if ($queryUri)
 		{
@@ -32,8 +35,8 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 
 			// NOTE: the first spot in $queryUriArray is empty, so start from index '1'
 			$params['jobTypeSlug']              = ($queryUriArray[1] !== 'all') ? urldecode($queryUriArray[1]) : null;
-			$params['request']['certification'] = ($queryUriArray[2] !== 'all') ? craft()->apiHealthcare_options->getProfessionNameBySlug($queryUriArray[2]) : null;
-			$params['request']['specialty']     = ($queryUriArray[3] !== 'all') ? craft()->apiHealthcare_options->getSpecialtyNameBySlug($queryUriArray[3]) : craft()->apiHealthcare_options->getWhitelistedSpecialtyNames();
+			$params['request']['certification'] = ($queryUriArray[2] !== 'all') ? craft()->apiHealthcare_professions->getNameBySlug($queryUriArray[2]) : null;
+			$params['request']['specialty']     = ($queryUriArray[3] !== 'all') ? craft()->apiHealthcare_specialties->getNameBySlug($queryUriArray[3]) : craft()->apiHealthcare_specialties->getWhitelistedNames();
 			$params['request']['clientStateIn'] = ($queryUriArray[4] !== 'all') ? urldecode($queryUriArray[4]) : null;
 			$params['request']['clientCityIn']  = ($queryUriArray[5] !== 'all') ? urldecode($queryUriArray[5]) : null;
 			// NOTE: client asked not to filter by Zip
@@ -41,11 +44,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			$params['filter']['zipCode'] = null;
 
 			
-			if (!$params['request']['certification'])
-			{
-				$params['check']['certification'] = true;
-			}
-			else
+			if ($params['request']['certification'])
 			{
 				$params['check'] = null;
 			}
@@ -71,12 +70,16 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			return false;
 		}
 
-		// set variable placeholder for certification checks
+		// set variable flag for certification checks
 		$whitelistedProfessions = false;
+
+		// set variable for number of Hot Jobs in results
+		$hotJobsCount = 0;
 
 		$results = array();
 		$json = stripslashes($jsonString);
-		$array = JsonHelper::decode($json);
+		//$array = JsonHelper::decode($json);
+		$array = JsonHelper::decode($jsonString);
 
 		if (is_array($array))
 		{
@@ -98,7 +101,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 				{
 					if (isset($checks['certification']) && $checks['certification'])
 					{
-						$whitelistedProfessions = $whitelistedProfessions ? $whitelistedProfessions : craft()->apiHealthcare_options->getWhitelistedProfessions();
+						$whitelistedProfessions = $whitelistedProfessions ? $whitelistedProfessions : craft()->apiHealthcare_professions->getWhitelisted();
 
 						foreach ($whitelistedProfessions as $whitelistedProfession)
 						{
@@ -124,16 +127,56 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 					$result->jobId       = (isset($item['orderId'])) ? $item['orderId'] : $item['lt_orderId'];
 					$result->jobType     = (isset($item['orderId'])) ? 'Per Diem' : 'Travel & Local Contracts';
 					$result->clientName  = $item['clientName'];
+					$result->isHotJob    = (bool) (isset($item['isHotJob'])) ? $item['isHotJob'] : false;
 					$result->description = $item['note'];
 
-					$results[] = $result;	
+					// flag hot jobs
+					if ($result->isHotJob)
+					{
+						$hotJobsCount .= 1;
+					}
+
+					$results[] = $result;
 				}
+			}
+
+			// Only sort hot jobs if there are
+			if ($hotJobsCount > 0)
+			{
+				$results = $this->_sortHotJobs($results);
 			}
 
 			return $results;
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param array $results
+	 * @return sorted array
+	 */
+	private function _sortHotJobs($results)
+	{
+		$hot    = array();
+		$notHot = array();
+		$rCount = count($results);
+
+		for ($i = 0; $i < $rCount; $i++)
+		{ 
+			if ($results[$i]->isHotJob)
+			{
+				$hot[] = $results[$i];
+			}
+			else
+			{
+				$notHot[] = $results[$i];
+			}
+		}
+
+		$results = array_merge($hot, $notHot);
+
+		return $results;
 	}
 
 	/**
@@ -151,11 +194,13 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		if ($type === 'getOrders')
 		{
 			$params['request']['orderBy1'] = 'shiftStartTime';
-			$params['request']['clientId'] = craft()->apiHealthcare_options->getPerDiemClientClientIds();
+			$params['request']['orderByDirection1'] = 'DESC';
+			$params['request']['clientId'] = craft()->apiHealthcare_perDiemClients->getIds();
 		}
 		else if ($type === 'getLtOrders')
 		{
 			$params['request']['orderBy1'] = 'dateStart';
+			$params['request']['orderByDirection1'] = 'DESC';
 		}
 		
 		$jsonString = $this->_sendRequest($type, $params['request']);
@@ -200,7 +245,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	public function getSearchResultsFromUrl()
 	{
 		$query = new ApiHealthcare_QueryModel();
-		$query->dateStart  = date('Y-m-d');
+		//$query->dateStart  = date('Y-m-d');
 		$query->status     = 'open';
 
 		$queryString = craft()->request->queryStringWithoutPath;
@@ -208,9 +253,6 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 
 		$params = array();
 		$results = null;
-
-		//return craft()->apiHealthcare_options->getWhitelistedSpecialtyNames();
-
 
 		if ($queryString === 'show-all=true')
 		{
@@ -257,9 +299,13 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		{
 			// Merge & Sort Orders & Long-Term Orders
 			$results = array_merge($resultsOrders, $resultsLtOrders);
+			
+			// sort by reverse chronological order
 			usort($results, function($a, $b) {
-				return strcmp($a->dateStart, $b->dateStart);
+				return strcmp($b->dateStart, $a->dateStart);
 			});
+			
+			$results = $this->_sortHotJobs($results);
 		}
 		else if (isset($resultsOrders))
 		{
@@ -277,13 +323,77 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	 * @param string $id
 	 * @return array
 	 */
+	public function getOrderById($id)
+	{
+		$params = array();
+		$params['orderId'] = $id;
+		$jsonString = $this->_sendRequest('getOrders', $params);
+
+		return $jsonString;
+
+		$results = $this->_prepResults($jsonString);
+
+		if ($results)
+		{
+			return $results[0];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * @param string $id
+	 * @return array
+	 */
 	public function getLtOrderById($id)
 	{
 		$params = array();
 		$params['ltOrderId'] = $id;
 		$jsonString = $this->_sendRequest('getLtOrders', $params);
 
-		return $jsonString;
+		$results = $this->_prepResults($jsonString);
+
+		if ($results)
+		{
+			return $results[0];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * @param string $limit
+	 * @return array
+	 */
+	public function getHotJobs($limit = null)
+	{
+		$query         = new ApiHealthcare_QueryModel();
+		$query->status = 'open';
+
+		
+		$params  = $this->_prepSearchParams($query);
+		$params['request']['hotJobsOnly'] = true;
+		$results = $this->_getResults('getLtOrders', $params);
+
+		if ($results)
+		{
+			if ($limit)
+			{
+				return array_slice($results, 0, $limit);
+			}
+			else
+			{
+				return $results;
+			}
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 }

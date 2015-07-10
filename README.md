@@ -13,8 +13,14 @@ To install Perform, follow these steps:
 4.  Navigate to API Healthcare -> Professions and click "Update Professions".
 5.  Navigate to API Healthcare -> Specialties and click "Update Specialties".
 6.  Navigate to API Healthcare -> Per-Diem Clients to add whitelisted clients.
+7.  Navigate to API Healthcare -> Locations, click "Populate States" and then "Edit Search Options" to set whitelisted locations.
 
 ## Changelog
+
+### 0.4.0
+
+* Added whitelist for Locations in CP
+* Refactored Options into separate Professions, Specialties & Per-Diem Clients classes for better separation of concerns
 
 ### 0.3.1
 

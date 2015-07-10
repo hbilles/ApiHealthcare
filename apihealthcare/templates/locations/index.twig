@@ -1,0 +1,63 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% set title = 'Locations Whitelist'|t %}
+{% set selectedTab = 'locations' %}
+
+{% set content %}
+
+<div id="apihealthcare-message">
+	<p>The approved locations listed here will be shown as options to users to search by location.</p>
+</div>
+
+<div id="apihealthcare-noLocations">
+	<p>{{ "No locations exist yet."|t }}</p>
+</div>
+
+{% if locations|length %}
+<table id="apihealthcare-locations" class="data fullwidth collapsible">
+	<thead class="sections">
+		<tr>
+			<th class="name">{{ "Name"|t }}</th>
+			<th class="abbreviation">{{ "Abbreviation"|t }}</th>
+			<th class="show">{{ "Show in search?"|t }}</th>
+		</tr>
+	</thead>
+
+	<tbody class="sections">
+	{% for location in locations %}
+		<tr data-id="{{ location.id }}" data-name="{{ location.name }}">
+			<td>
+				{{ location.name }}
+			</td>
+			<td>
+				{{ location.abbreviation }}
+			</td>
+			<td>
+				<span style="color: {% if location.show %}green;{% else %}#bbb;{% endif %}">{% if not location.show %}Not {% endif %}Searchable</span>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<p class="buttons">
+	<a href="{{ url('apihealthcare/locations/edit-search') }}" class="btn submit search icon">{{ "Search Options"|t }}</a>
+</p>
+{% endif %}
+
+{% if locations|length == 0 %}
+<p id="apihealthcare-populateStates" class="buttons">
+	<a href="{{ url('apihealthcare/locations/populate-states') }}" class="btn submit">{{ "Populate U.S. States"|t }}</a>
+</p>
+{% endif %}
+
+{% endset %}
+
+
+{% set js %}
+var adminTable = new Craft.AdminTable({
+	tableSelector: '#apihealthcare-locations',
+	noObjectsSelector: '#apihealthcare-noLocations'
+});
+{% endset %}
+{% includeJs js %}

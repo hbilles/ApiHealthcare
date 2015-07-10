@@ -7,7 +7,7 @@
 {% set content %}
 
 <form id="apihealthcare-editProfession" action="" method="post" accept-charset="UTF-8">
-	<input type="hidden" name="action" value="apiHealthcare/options/saveProfession">
+	<input type="hidden" name="action" value="apiHealthcare/professions/save">
 	<input type="hidden" name="redirect" value="apihealthcare/professions">
 	{% if profession.id %}<input type="hidden" name="professionId" value="{{ profession.id }}">{% endif %}
 	

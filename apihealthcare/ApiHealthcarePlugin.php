@@ -11,7 +11,7 @@ class ApiHealthcarePlugin extends BasePlugin
 
 	function getVersion()
 	{
-		return '0.3.1';
+		return '0.4.0';
 	}
 
 	function getDeveloper()
@@ -50,20 +50,23 @@ class ApiHealthcarePlugin extends BasePlugin
     public function registerCpRoutes()
     {
         return array(
-        	'apihealthcare'                                           => array('action' => 'apiHealthcare/options/professionsIndex'),
-        	'apihealthcare/professions'                               => array('action' => 'apiHealthcare/options/professionsIndex'),
-        	'apihealthcare/professions/update'                        => array('action' => 'apiHealthcare/options/updateProfessions'),
-        	'apihealthcare/professions/reset'                         => array('action' => 'apiHealthcare/options/resetProfessions'),
-        	'apihealthcare/professions/(?P<professionId>\d+)'         => array('action' => 'apiHealthcare/options/editProfession'),
-        	'apihealthcare/professions/edit-search'                   => array('action' => 'apiHealthcare/options/editProfessionSearchSettings'),
-        	'apihealthcare/specialties'                               => array('action' => 'apiHealthcare/options/specialtiesIndex'),
-        	'apihealthcare/specialties/update'                        => array('action' => 'apiHealthcare/options/updateSpecialties'),
-        	'apihealthcare/specialties/reset'                         => array('action' => 'apiHealthcare/options/resetSpecialties'),
-        	'apihealthcare/specialties/(?P<specialtyId>\d+)'          => array('action' => 'apiHealthcare/options/editSpecialty'),
-        	'apihealthcare/specialties/edit-search'                   => array('action' => 'apiHealthcare/options/editSpecialtySearchSettings'),
-        	'apihealthcare/per-diem-clients'                          => array('action' => 'apiHealthcare/options/perDiemClientsIndex'),
-        	'apihealthcare/per-diem-clients/new'                      => array('action' => 'apiHealthcare/options/editPerDiemClient'),
-        	'apihealthcare/per-diem-clients/(?P<perDiemClientId>\d+)' => array('action' => 'apiHealthcare/options/editPerDiemClient')
+        	'apihealthcare'                                           => array('action' => 'apiHealthcare/professions/index'),
+        	'apihealthcare/professions'                               => array('action' => 'apiHealthcare/professions/index'),
+        	'apihealthcare/professions/update'                        => array('action' => 'apiHealthcare/professions/update'),
+        	'apihealthcare/professions/reset'                         => array('action' => 'apiHealthcare/professions/reset'),
+        	'apihealthcare/professions/(?P<professionId>\d+)'         => array('action' => 'apiHealthcare/professions/edit'),
+        	'apihealthcare/professions/edit-search'                   => array('action' => 'apiHealthcare/professions/editSearchSettings'),
+        	'apihealthcare/specialties'                               => array('action' => 'apiHealthcare/specialties/index'),
+        	'apihealthcare/specialties/update'                        => array('action' => 'apiHealthcare/specialties/update'),
+        	'apihealthcare/specialties/reset'                         => array('action' => 'apiHealthcare/specialties/reset'),
+        	'apihealthcare/specialties/(?P<specialtyId>\d+)'          => array('action' => 'apiHealthcare/specialties/edit'),
+        	'apihealthcare/specialties/edit-search'                   => array('action' => 'apiHealthcare/specialties/editSearchSettings'),
+        	'apihealthcare/per-diem-clients'                          => array('action' => 'apiHealthcare/perDiemClients/index'),
+        	'apihealthcare/per-diem-clients/new'                      => array('action' => 'apiHealthcare/perDiemClients/edit'),
+        	'apihealthcare/per-diem-clients/(?P<perDiemClientId>\d+)' => array('action' => 'apiHealthcare/perDiemClients/edit'),
+        	'apihealthcare/locations'                                 => array('action' => 'apiHealthcare/locations/index'),
+        	'apihealthcare/locations/edit-search'                     => array('action' => 'apiHealthcare/locations/editSearchSettings'),
+        	'apihealthcare/locations/populate-states'                 => array('action' => 'apiHealthcare/locations/populateStates')
         );
 
 	}

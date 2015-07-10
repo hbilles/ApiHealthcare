@@ -1,0 +1,59 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% import '_includes/forms' as forms %}
+
+{% set selectedTab = 'locations' %}
+
+{% set content %}
+
+{% if locations|length %}
+<form id="apihealthcare-editAllLocations" action="" method="post" accept-charset="UTF-8">
+	<input type="hidden" name="action" value="apiHealthcare/locations/saveSearchSettings">
+	<input type="hidden" name="redirect" value="apihealthcare/locations">
+
+	<table id="apihealthcare-locations" class="data fullwidth collapsible">
+		<thead class="sections">
+			<tr>
+				<th class="name">{{ "Name"|t }}</th>
+				<th class="abbreviation">{{ "Abbreviation"|t }}</th>
+				<th class="show">{{ "Show in search?"|t }}</th>
+			</tr>
+		</thead>
+
+		<tbody class="sections">
+		{% for location in locations %}
+			<tr data-id="{{ location.id }}" data-name="{{ location.name }}">
+				<td>
+					{{ location.name }}
+				</td>
+				<td>
+					{{ location.abbreviation }}
+				</td>
+				<td>
+					{{ forms.checkbox({
+						label: 'Searchable?'|t,
+						id: "locations-" ~ location.id ~ "-show",
+						name: "locations[" ~ location.id ~ "][show]",
+						checked: location.show
+					}) }}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+	</div>
+</form>
+
+{% else %}
+
+<div id="apihealthcare-noLocations">
+	<p>{{ "No locations exist yet."|t }}</p>
+</div>
+
+{% endif %}
+
+{% endset %}
+
