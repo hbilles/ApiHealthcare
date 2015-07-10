@@ -128,7 +128,27 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 					$result->jobType     = (isset($item['orderId'])) ? 'Per Diem' : 'Travel & Local Contracts';
 					$result->clientName  = $item['clientName'];
 					$result->isHotJob    = (bool) (isset($item['isHotJob'])) ? $item['isHotJob'] : false;
-					$result->description = $item['note'];
+					// We use 'note' for orders and 'transportationNote' or 'housingNote' for ltOrders
+					// At client's request we do not use 'note' for ltOrders
+					if (isset($item['orderId']))
+					{
+						$result->description = $item['note'];
+					}
+					else
+					{
+						if ($item['transportationNote'] && $item['housingNote'])
+						{
+							$result->description = $item['transportationNote'] . "\r\n\r\n" . $item['housingNote'];
+						}
+						else if ($item['transportationNote'])
+						{
+							$result->description = $item['transportationNote'];
+						}
+						else if ($item['housingNote'])
+						{
+							$result->description = $item['housingNote'];
+						}
+					}
 
 					// flag hot jobs
 					if ($result->isHotJob)

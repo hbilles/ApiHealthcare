@@ -17,6 +17,10 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 0.4.1
+
+* Only show transportationNote or housingNote for ltOrders
+
 ### 0.4.0
 
 * Added whitelist for Locations in CP
