@@ -48,6 +48,11 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_queries->getHotJobs($limit);
 	}
 
+	public function youSearchedFor()
+	{
+		return craft()->apiHealthcare_queries->youSearchedFor();
+	}
+
 	/*
 	public function testRequest()
 	{

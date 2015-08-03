@@ -17,6 +17,10 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 0.4.2
+
+* Added youSearchedFor() function to return formatted string describing search parameters
+
 ### 0.4.1
 
 * Only show transportationNote or housingNote for ltOrders

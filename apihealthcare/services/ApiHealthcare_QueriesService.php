@@ -340,6 +340,72 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function youSearchedFor()
+	{
+		$query = new ApiHealthcare_QueryModel();
+
+		$queryString = craft()->request->queryStringWithoutPath;
+		$requestUri  = craft()->request->requestUri;
+
+		$result = null;
+
+		if ($queryString === 'show-all=true')
+		{
+			$result = "You searched <strong>all</strong> assignments";
+		}
+		else
+		{
+			$parts = explode($query->getSearchBaseUri(), $requestUri);
+
+			if (isset($parts[1]) && strlen($parts[1]) > 1)
+			{
+				$queryUri = $parts[1];
+				$queryUriArray = explode('/', $queryUri);
+
+				// Assignment Type
+				if ($queryUriArray[1] !== 'all')
+				{
+					if ($queryUriArray[1] === 'per-diem')
+					{
+						$result = "You searched for <strong>Per-Diem</strong> assignments";
+					}
+					else
+					{
+						$result = "You searched for <strong>Travel and Contract</strong> assignments";
+					}
+					
+				}
+				else
+				{
+					$result = "You searched for assignments";
+				}
+
+				// Professions
+				if ($queryUriArray[2] !== 'all')
+				{
+					$result .= " - <strong>" . craft()->apiHealthcare_professions->getNameBySlug($queryUriArray[2]) . "</strong>";
+				}
+
+				// Specialties
+				if ($queryUriArray[3] !== 'all')
+				{
+					$result .= " - <strong>" . craft()->apiHealthcare_specialties->getNameBySlug($queryUriArray[3]) . "</strong>";
+				}
+
+				// Location
+				if ($queryUriArray[4] !== 'all')
+				{
+					$result .= " in <strong>" . urldecode($queryUriArray[4]) . "</strong>";
+				}
+			}
+		}
+		
+		return $result;
+	}
+
+	/**
 	 * @param string $id
 	 * @return array
 	 */
