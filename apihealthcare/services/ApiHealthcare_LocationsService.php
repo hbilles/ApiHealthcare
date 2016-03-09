@@ -229,4 +229,27 @@ class ApiHealthcare_LocationsService extends BaseApplicationComponent
 
 		return $locationRecord->delete();
 	}
+
+	/**
+	 * @param string $abbreviation
+	 * @return string
+	 */
+	public function getNameByAbbreviation($abbreviation)
+	{
+		if (!$abbreviation)
+		{
+			return false;
+		}
+
+		$locationRecord = ApiHealthcare_LocationRecord::model()->findByAttributes(array(
+			'abbreviation' => $abbreviation
+		));
+
+		if (!$locationRecord)
+		{
+			throw new Exception('Location with abbreviation of ' . $abbreviation . ' not found!');
+		}
+
+		return $locationRecord->name;
+	}
 }

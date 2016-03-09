@@ -15,7 +15,7 @@ class ApiHealthcare_BaseService extends BaseApplicationComponent
 			return false;
 		}
 
-		require_once(CRAFT_PLUGINS_PATH.'apihealthcare/vendor/ApiHealthcare/ClearConnectLib.php');
+		require_once(CRAFT_PLUGINS_PATH.'apihealthcare/vendor/ApiHealthcare/ClearConnectLibModified.php');
 
 		$settings = craft()->plugins->getPlugin('apiHealthcare')->getSettings();
 		if (!$settings->apiUsername || !$settings->apiPassword || !$settings->apiClusterPrefix || !$settings->apiSiteName)

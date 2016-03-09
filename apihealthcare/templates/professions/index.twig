@@ -52,9 +52,12 @@
 <p id="apihealthcare-updateProfessions" class="buttons">
 	<a href="{{ url('apihealthcare/professions/update') }}" class="btn submit">{{ "Update Professions" }}</a>
 </p>
+{# NOTE: disabled this for now, as it seems too dangerous to allow client to wipe out all search settings
+	without knowing what they're doing
 <p id="apihealthcare-resetProfessions" class="buttons">
 	<a href="{{ url('apihealthcare/professions/reset') }}" class="btn submit">{{ "Reset Professions" }}</a>
 </p>
+#}
 
 {% endset %}
 

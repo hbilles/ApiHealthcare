@@ -17,6 +17,12 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 0.5.3
+
+* Updated to return full name of state for descriptions of search parameters
+* Updated API Healthcare's ClearConnectLib to allow api calls from unsecure domain
+* Updated jobSearchTitle() function to return formatted string describing search parameters for meta titles or heading titles
+
 ### 0.4.2
 
 * Added youSearchedFor() function to return formatted string describing search parameters

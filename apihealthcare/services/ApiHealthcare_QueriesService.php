@@ -43,6 +43,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			//$params['filter']['zipCode']        = ($queryUriArray[6] !== 'all') ? urldecode($queryUriArray[6]) : null;
 			$params['filter']['zipCode'] = null;
 
+
 			
 			if ($params['request']['certification'])
 			{
@@ -221,6 +222,8 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		{
 			$params['request']['orderBy1'] = 'dateStart';
 			$params['request']['orderByDirection1'] = 'DESC';
+			// Only pull order from Travel Region
+			$params['request']['regionIdIn'] = '3';
 		}
 		
 		$jsonString = $this->_sendRequest($type, $params['request']);
@@ -340,7 +343,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	}
 
 	/**
-	 * @return array
+	 * @return string
 	 */
 	public function youSearchedFor()
 	{
@@ -353,7 +356,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 
 		if ($queryString === 'show-all=true')
 		{
-			$result = "You searched <strong>all</strong> assignments";
+			$result = "Displaying results for: <strong>All Clinician</strong> jobs";
 		}
 		else
 		{
@@ -369,35 +372,130 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 				{
 					if ($queryUriArray[1] === 'per-diem')
 					{
-						$result = "You searched for <strong>Per-Diem</strong> assignments";
+						$result = "Displaying results for: <strong>Per-Diem</strong>";
 					}
 					else
 					{
-						$result = "You searched for <strong>Travel and Contract</strong> assignments";
+						$result = "Displaying results for: <strong>Travel and Contract</strong>";
 					}
 					
 				}
 				else
 				{
-					$result = "You searched for assignments";
+					$result = "Displaying results for:";
 				}
 
 				// Professions
 				if ($queryUriArray[2] !== 'all')
 				{
-					$result .= " - <strong>" . craft()->apiHealthcare_professions->getNameBySlug($queryUriArray[2]) . "</strong>";
+					$result .= " <strong>" . craft()->apiHealthcare_professions->getNameBySlug($queryUriArray[2]) . "</strong>";
+
+					// Check Specialty, add hyphen if exists
+					if ($queryUriArray[3] !== 'all')
+					{
+						$result .= " -";
+					}
 				}
 
 				// Specialties
 				if ($queryUriArray[3] !== 'all')
 				{
-					$result .= " - <strong>" . craft()->apiHealthcare_specialties->getNameBySlug($queryUriArray[3]) . "</strong>";
+					$result .= " <strong>" . craft()->apiHealthcare_specialties->getNameBySlug($queryUriArray[3]) . "</strong>";
 				}
+
+				$result .= " jobs";
 
 				// Location
 				if ($queryUriArray[4] !== 'all')
 				{
-					$result .= " in <strong>" . urldecode($queryUriArray[4]) . "</strong>";
+					$result .= " in <strong>" . craft()->apiHealthcare_locations->getNameByAbbreviation($queryUriArray[4]) . "</strong>";
+				}
+			}
+		}
+		
+		return $result;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function jobSearchTitle($meta = false)
+	{
+		$query = new ApiHealthcare_QueryModel();
+
+		$queryString = craft()->request->queryStringWithoutPath;
+		$requestUri  = craft()->request->requestUri;
+
+		$result = null;
+
+		if ($queryString === 'show-all=true')
+		{
+			if ($meta)
+			{
+				$result = "Medical Clinician Job Search";
+			}
+			else
+			{
+				$result = "All Medical Clinician Jobs";
+			}
+		}
+		else
+		{
+			$parts = explode($query->getSearchBaseUri(), $requestUri);
+
+			if (isset($parts[1]) && strlen($parts[1]) > 1)
+			{
+				$queryUri = $parts[1];
+				$queryUriArray = explode('/', $queryUri);
+
+				$result = "";
+
+				// Assignment Type
+				if ($queryUriArray[1] !== 'all')
+				{
+					if ($queryUriArray[1] === 'per-diem')
+					{
+						$result .= "Per-Diem ";
+					}
+					else
+					{
+						$result .= "Travel and Contract ";
+					}
+					
+				}
+
+				// Professions
+				if ($queryUriArray[2] !== 'all')
+				{
+					$result .= craft()->apiHealthcare_professions->getNameBySlug($queryUriArray[2]) . " ";
+
+					// Check Specialty, add hyphen if exists
+					if ($queryUriArray[3] !== 'all')
+					{
+						$result .= "- ";
+					}
+				}
+
+				// Specialties
+				if ($queryUriArray[3] !== 'all')
+				{
+					$result .= craft()->apiHealthcare_specialties->getNameBySlug($queryUriArray[3]) . " ";
+				}
+
+				if ($meta)
+				{
+					$result .= "Job Search";
+				}
+				else
+				{
+					$result .= "Jobs";
+				}
+
+
+				// Location
+				if ($queryUriArray[4] !== 'all')
+				{
+					$result .= " in " . craft()->apiHealthcare_locations->getNameByAbbreviation($queryUriArray[4]);
 				}
 			}
 		}
@@ -414,8 +512,6 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		$params = array();
 		$params['orderId'] = $id;
 		$jsonString = $this->_sendRequest('getOrders', $params);
-
-		return $jsonString;
 
 		$results = $this->_prepResults($jsonString);
 

@@ -53,6 +53,16 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_queries->youSearchedFor();
 	}
 
+	public function jobSearchMetaTitle()
+	{
+		return craft()->apiHealthcare_queries->jobSearchTitle(true);
+	}
+
+	public function jobSearchTitle()
+	{
+		return craft()->apiHealthcare_queries->jobSearchTitle();
+	}
+
 	/*
 	public function testRequest()
 	{

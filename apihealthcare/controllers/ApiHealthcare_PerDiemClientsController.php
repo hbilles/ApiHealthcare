@@ -1,7 +1,7 @@
 <?php
 namespace Craft;
 
-class ApiHealthcare_OptionsController extends BaseController
+class ApiHealthcare_PerDiemClientsController extends BaseController
 {
 	public function actionIndex()
 	{
