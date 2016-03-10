@@ -33,6 +33,22 @@ class ApiHealthcare_SpecialtiesService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getWhitelistedMenuItems()
+	{
+		$results = array('all' => 'All');
+		$whitelistedSpecialties = $this->getWhitelisted();
+
+		foreach ($whitelistedSpecialties as $specialty)
+		{
+			$results[$specialty->slug] = $specialty->name;
+		}
+
+		return $results;
+	}
+
+	/**
 	 * @param string $specialtyId
 	 * @return ApiHealthcare_SpecialtyModel
 	 */

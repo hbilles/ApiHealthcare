@@ -40,6 +40,22 @@ class ApiHealthcare_LocationsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getWhitelistedMenuItems()
+	{
+		$results = array('all' => 'All');
+		$whitelistedLocations = $this->getWhitelisted();
+
+		foreach ($whitelistedLocations as $location)
+		{
+			$results[$location->abbreviation] = $location->name;
+		}
+
+		return $results;
+	}
+
+	/**
 	 * @param string $locationId
 	 * @return ApiHealthcare_LocationModel
 	 */

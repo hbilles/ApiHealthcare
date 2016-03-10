@@ -1,0 +1,29 @@
+@charset "utf-8";
+
+.apihealthcare__job-listing-field {
+	padding: 1em 1em .75em;
+
+	border: 1px solid #e3e5e8;
+	border-radius: 4px;
+	background: #fafafa;
+}
+
+.apihealthcare__job-listing-field__job-type,
+.apihealthcare__job-listing-field__profession,
+.apihealthcare__job-listing-field__specialty,
+.apihealthcare__job-listing-field__location {
+	margin: 0 .5em .5em;
+}
+
+@media screen and (min-width: 640px) {
+	.apihealthcare__job-listing-field__job-type,
+	.apihealthcare__job-listing-field__profession,
+	.apihealthcare__job-listing-field__specialty,
+	.apihealthcare__job-listing-field__location {
+		display: inline-block;
+	}
+}
+
+.apihealthcare__job-listing-field .heading label {
+	opacity: .6;
+}

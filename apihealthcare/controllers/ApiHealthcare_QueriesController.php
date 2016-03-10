@@ -3,9 +3,9 @@ namespace Craft;
 
 class ApiHealthcare_QueriesController extends BaseController
 {
-	protected $allowAnonymous = array('actionGetSearchUrl');
+	protected $allowAnonymous = array('actionGetJobSearchUrl', 'actionGetSearchUrl');
 
-	public function actionGetSearchUrl()
+	public function actionGetJobSearchUrl()
 	{
 		$this->requirePostRequest();
 
@@ -32,7 +32,7 @@ class ApiHealthcare_QueriesController extends BaseController
 			}
 		}
 
-		$searchUrl = craft()->apiHealthcare_queries->getSearchUrl($query);
+		$searchUrl = craft()->apiHealthcare_queries->getJobSearchUrl($query);
 
 		if ($searchUrl)
 		{
@@ -42,5 +42,11 @@ class ApiHealthcare_QueriesController extends BaseController
 		{
 			$this->redirect('/404');
 		}
+	}
+
+	// DEPRECATED: use actionGetJobSearchUrl() instead
+	public function actionGetSearchUrl()
+	{
+		return $this->actionGetJobSearchUrl();
 	}
 }

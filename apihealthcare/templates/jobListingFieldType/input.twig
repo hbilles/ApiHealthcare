@@ -1,0 +1,44 @@
+{% import '_includes/forms' as forms %}
+
+<div class="apihealthcare__job-listing-field" id="{{ handle }}">
+	<div class="apihealthcare__job-listing-field__job-type">
+		{{ forms.selectField({
+			label: 'Job Type'|t,
+			id: handle ~ '__job-type',
+			name: handle ~ '[jobType]',
+			value: value ? value.jobType,
+			options: {
+				'all': 'All',
+				'per-diem': 'Per Diem',
+				'travel-contracts': 'Travel/Contracts'
+			}
+		}) }}
+	</div>
+	<div class="apihealthcare__job-listing-field__profession">
+		{{ forms.selectField({
+			label: 'Profession'|t,
+			id: handle ~ '__profession',
+			name: handle ~ '[profession]',
+			value: value ? value.profession,
+			options: options.professions
+		}) }}
+	</div>
+	<div class="apihealthcare__job-listing-field__specialty">
+		{{ forms.selectField({
+			label: 'Specialty'|t,
+			id: handle ~ '__specialty',
+			name: handle ~ '[specialty]',
+			value: value ? value.specialty,
+			options: options.specialties
+		}) }}
+	</div>
+	<div class="apihealthcare__job-listing-field__location">
+		{{ forms.selectField({
+			label: 'Location'|t,
+			id: handle ~ '__location',
+			name: handle ~ '[location]',
+			value: value ? value.location,
+			options: options.locations
+		}) }}
+	</div>
+</div>

@@ -17,6 +17,11 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 1.0.0
+
+* Refactored job search functions for better clarity & composability
+* Added API Healthcare Job Listing fieldtype to allow custom listings on non-search pages
+
 ### 0.5.3
 
 * Updated to return full name of state for descriptions of search parameters

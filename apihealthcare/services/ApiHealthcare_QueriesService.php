@@ -201,11 +201,31 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @param array $resultsOrders
+	 * @param array $resultsLtOrders
+	 * @return sorted array $results
+	 */
+	private function _mergeOrders($resultsOrders, $resultsLtOrders)
+	{
+		// Merge & Sort Orders & Long-Term Orders
+		$results = array_merge($resultsOrders, $resultsLtOrders);
+		
+		// sort by reverse chronological order
+		usort($results, function($a, $b) {
+			return strcmp($b->dateStart, $a->dateStart);
+		});
+		
+		$results = $this->_sortHotJobs($results);
+
+		return $results;
+	}
+
+	/**
 	 * @param string $type
 	 * @param array $params
 	 * @return array containing multiple ApiHealthcare_QueryModels
 	 */
-	private function _getResults($type, $params)
+	private function _getJobResultType($type, $params)
 	{
 		if (!$type || !$params)
 		{
@@ -232,10 +252,46 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @param array $params
+	 * @return array $results
+	 */
+	private function _getJobResults($params)
+	{
+		if (!$params)
+		{
+			return false;
+		}
+
+		// Search Per Diem
+		if ($params['jobTypeSlug'] === 'per-diem')
+		{
+			$results = $this->_getJobResultType('getOrders', $params);
+		}
+		// Search Long-Term
+		else if ($params['jobTypeSlug'] === 'travel-contracts')
+		{
+			$results = $this->_getJobResultType('getLtOrders', $params);
+		}
+		// Search Everything
+		else
+		{
+			// Parse Orders
+			$resultsOrders = $this->_getJobResultType('getOrders', $params);
+
+			// Parse Long-Term Orders
+			$resultsLtOrders = $this->_getJobResultType('getLtOrders', $params);
+
+			$results = $this->_mergeOrders($resultsOrders, $resultsLtOrders);
+		}
+
+		return $results;
+	}
+
+	/**
 	 * @param ApiHealthcare_QueryModel $query
 	 * @return string
 	 */
-	public function getSearchUrl(ApiHealthcare_QueryModel $query)
+	public function getJobSearchUrl(ApiHealthcare_QueryModel $query)
 	{
 		if (!$query)
 		{
@@ -265,7 +321,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 	/**
 	 * @return array
 	 */
-	public function getSearchResultsFromUrl()
+	public function getJobResultsFromUrl()
 	{
 		$query = new ApiHealthcare_QueryModel();
 		//$query->dateStart  = date('Y-m-d');
@@ -280,12 +336,6 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		if ($queryString === 'show-all=true')
 		{
 			$params = $this->_prepSearchParams($query);
-			
-			// Parse Orders
-			$resultsOrders = $this->_getResults('getOrders', $params);
-
-			// Parse Long-Term Orders
-			$resultsLtOrders = $this->_getResults('getLtOrders', $params);
 		}
 		else
 		{
@@ -295,49 +345,10 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			{
 				$queryUri = $parts[1];
 				$params = $this->_prepSearchParams($query, $queryUri);
-
-				// Search Per Diem
-				if ($params['jobTypeSlug'] === 'per-diem')
-				{
-					$results = $this->_getResults('getOrders', $params);
-				}
-				// Search Long-Term
-				else if ($params['jobTypeSlug'] === 'travel-contracts')
-				{
-					$results = $this->_getResults('getLtOrders', $params);
-				}
-				// Search Everything
-				else
-				{
-					// Parse Orders
-					$resultsOrders = $this->_getResults('getOrders', $params);
-
-					// Parse Long-Term Orders
-					$resultsLtOrders = $this->_getResults('getLtOrders', $params);
-				}
 			}
 		}
 
-		if (isset($resultsOrders) && isset($resultsLtOrders))
-		{
-			// Merge & Sort Orders & Long-Term Orders
-			$results = array_merge($resultsOrders, $resultsLtOrders);
-			
-			// sort by reverse chronological order
-			usort($results, function($a, $b) {
-				return strcmp($b->dateStart, $a->dateStart);
-			});
-			
-			$results = $this->_sortHotJobs($results);
-		}
-		else if (isset($resultsOrders))
-		{
-			$results = $resultsOrders;
-		}
-		else if (isset($resultsLtOrders))
-		{
-			$results = $resultsLtOrders;
-		}
+		$results = $this->_getJobResults($params);
 		
 		return $results;
 	}
@@ -559,7 +570,7 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		
 		$params  = $this->_prepSearchParams($query);
 		$params['request']['hotJobsOnly'] = true;
-		$results = $this->_getResults('getLtOrders', $params);
+		$results = $this->_getJobResultType('getLtOrders', $params);
 
 		if ($results)
 		{
@@ -571,6 +582,43 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 			{
 				return $results;
 			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
+	/**
+	 * @param json string $criteria
+	 * @return array
+	 */
+	public function getJobListingByCriteria($criteriaString)
+	{
+		if (!$criteriaString)
+		{
+			return false;
+		}
+
+		$criteria = json_decode($criteriaString, true);
+
+		$query         = new ApiHealthcare_QueryModel();
+		$query->status = 'open';
+
+		
+		$params  = $this->_prepSearchParams($query);
+		
+		$params['jobTypeSlug'] = ($criteria['jobType'] !== 'all') ? $criteria['jobType'] : null;
+		$params['request']['certification'] = ($criteria['profession'] !== 'all') ? craft()->apiHealthcare_professions->getNameBySlug($criteria['profession']) : null;
+		$params['request']['specialty'] = ($criteria['specialty'] !== 'all') ? craft()->apiHealthcare_specialties->getNameBySlug($criteria['specialty']) : null;
+		$params['request']['clientStateIn'] = ($criteria['location'] !== 'all') ? $criteria['location'] : null;
+		
+		$results = $this->_getJobResults($params);
+
+		if ($results)
+		{
+			return $results;
 		}
 		else
 		{

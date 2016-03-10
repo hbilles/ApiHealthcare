@@ -40,6 +40,22 @@ class ApiHealthcare_ProfessionsService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getWhitelistedMenuItems()
+	{
+		$results = array('all' => 'All');
+		$whitelistedProfessions = $this->getWhitelisted();
+
+		foreach ($whitelistedProfessions as $profession)
+		{
+			$results[$profession->slug] = $profession->name;
+		}
+
+		return $results;
+	}
+
+	/**
 	 * @param string $professionId
 	 * @return ApiHealthcare_ProfessionModel
 	 */

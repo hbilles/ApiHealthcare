@@ -28,9 +28,20 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_locations->getWhitelisted();
 	}
 
+	public function getJobResultsFromUrl()
+	{
+		return craft()->apiHealthcare_queries->getJobResultsFromUrl();
+	}
+
+	// DEPRECATED: use getJobResultsFromUrl() instead
 	public function getSearchResultsFromUrl()
 	{
-		return craft()->apiHealthcare_queries->getSearchResultsFromUrl();
+		return craft()->apiHealthcare_queries->getJobResultsFromUrl();
+	}
+
+	public function getJobListingByCriteria($criteria)
+	{
+		return craft()->apiHealthcare_queries->getJobListingByCriteria($criteria);
 	}
 
 	public function getOrderById($id)
