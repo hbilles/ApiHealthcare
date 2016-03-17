@@ -8,13 +8,13 @@ class ApiHealthcare_JobListingFieldType extends BaseFieldType
 		return Craft::t('API Healthcare Job Listing');
 	}
 
+	public function defineContentAttribute()
+	{
+		return AttributeType::Mixed;
+	}
+
 	public function getInputHtml($name, $value)
 	{
-		if (!empty($value))
-		{
-			$value = json_decode($value, true);
-		}
-
 		$options = array();
 	
 		$options['professions'] = craft()->apiHealthcare_professions->getWhitelistedMenuItems();

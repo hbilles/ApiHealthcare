@@ -17,6 +17,10 @@ To install Perform, follow these steps:
 
 ## Changelog
 
+### 1.0.1
+
+* Fixed a bug where saving entries containing a Job Listing fieldtype would throw a PHP exception
+
 ### 1.0.0
 
 * Refactored job search functions for better clarity & composability

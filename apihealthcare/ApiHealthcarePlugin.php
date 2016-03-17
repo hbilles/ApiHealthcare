@@ -11,6 +11,11 @@ class ApiHealthcarePlugin extends BasePlugin
 
 	function getVersion()
 	{
+		return '1.0.1';
+	}
+
+	public function getSchemaVersion()
+	{
 		return '1.0.0';
 	}
 

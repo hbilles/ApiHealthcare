@@ -263,12 +263,12 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 		}
 
 		// Search Per Diem
-		if ($params['jobTypeSlug'] === 'per-diem')
+		if (array_key_exists('jobTypeSlug', $params) && $params['jobTypeSlug'] === 'per-diem')
 		{
 			$results = $this->_getJobResultType('getOrders', $params);
 		}
 		// Search Long-Term
-		else if ($params['jobTypeSlug'] === 'travel-contracts')
+		else if (array_key_exists('jobTypeSlug', $params) && $params['jobTypeSlug'] === 'travel-contracts')
 		{
 			$results = $this->_getJobResultType('getLtOrders', $params);
 		}
@@ -591,17 +591,15 @@ class ApiHealthcare_QueriesService extends ApiHealthcare_BaseService
 
 
 	/**
-	 * @param json string $criteria
+	 * @param array $criteria
 	 * @return array
 	 */
-	public function getJobListingByCriteria($criteriaString)
+	public function getJobListingByCriteria($criteria)
 	{
-		if (!$criteriaString)
+		if (!$criteria)
 		{
 			return false;
 		}
-
-		$criteria = json_decode($criteriaString, true);
 
 		$query         = new ApiHealthcare_QueryModel();
 		$query->status = 'open';
