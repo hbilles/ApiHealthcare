@@ -31,7 +31,8 @@ class ApiHealthcare_SpecialtyRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('specId'), 'unique' => true),
-			array('columns' => array('slug'), 'unique' => true)
+			array('columns' => array('slug'), 'unique' => true),
+			array('columns' => array('name'), 'unique' => true),
 		);
 	}
 

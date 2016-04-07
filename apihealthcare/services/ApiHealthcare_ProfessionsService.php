@@ -56,6 +56,40 @@ class ApiHealthcare_ProfessionsService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getAvailable()
+	{
+		$professionModels = $this->getWhitelisted();
+		$jobs = craft()->apiHealthcare_jobs->getAll();
+
+		$jobProfessions = array();
+		$availableProfessions = array();
+
+		foreach ($jobs as $job)
+		{
+			$jobProfessions[] = $job->professionSlug;
+		}
+
+		foreach ($professionModels as $profession)
+		{
+			if (in_array($profession->slug, $jobProfessions))
+			{
+				$availableProfessions[] = $profession;
+			}
+		}
+
+		if (count($availableProfessions) > 0)
+		{
+			return $availableProfessions;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * @param string $professionId
 	 * @return ApiHealthcare_ProfessionModel
 	 */
@@ -95,6 +129,29 @@ class ApiHealthcare_ProfessionsService extends ApiHealthcare_BaseService
 		}
 
 		return $professionRecord->name;
+	}
+
+	/**
+	 * @param string $name
+	 * @return string
+	 */
+	public function getSlugByName($name)
+	{
+		if (!$name)
+		{
+			return false;
+		}
+
+		$professionRecord = ApiHealthcare_ProfessionRecord::model()->findByAttributes(array(
+			'name' => $name
+		));
+
+		if (!$professionRecord)
+		{
+			throw new Exception('Profession with name of ' . $name . ' not found!');
+		}
+
+		return $professionRecord->slug;
 	}
 
 	/**

@@ -1,0 +1,57 @@
+{% extends 'apihealthcare/_layout' %}
+
+{% set title = 'Jobs'|t %}
+{% set selectedTab = 'jobs' %}
+
+{% set content %}
+
+<div id="apihealthcare-noJobs">
+	<p>{{ "No jobs have been imported."|t }}</p>
+</div>
+
+{% if jobs|length %}
+<table id="apihealthcare-jobs" class="data fullwidth collapsible">
+	<thead class="sections">
+		<tr>
+			<th class="jobId">{{ "Job Id"|t }}</th>
+			<th class="profession">{{ "Profession"|t }}</th>
+			<th class="specialty">{{ "Specialty"|t }}</th>
+			<th class="state">{{ "State"|t }}</th>
+		</tr>
+	</thead>
+
+	<tbody class="sections">
+	{% for job in jobs %}
+		<tr data-id="{{ job.id }}">
+			<td>
+				<code>{{ job.jobId }}</code>
+			</td>
+			<td>
+				{{ job.profession }}
+			</td>
+			<td>
+				{{ job.specialty }}
+			</td>
+			<td>
+				{{ job.state }}
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+<p id="apihealthcare-updateJobs" class="buttons">
+	<a href="{{ url('apihealthcare/jobs/update') }}" class="btn submit">{{ "Update Jobs" }}</a>
+</p>
+
+{% endset %}
+
+
+{% set js %}
+var adminTable = new Craft.AdminTable({
+	tableSelector: '#apihealthcare-jobs',
+	noObjectsSelector: '#apihealthcare-noJobs'
+});
+{% endset %}
+{% includeJs js %}

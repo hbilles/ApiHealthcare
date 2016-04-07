@@ -13,6 +13,11 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_professions->getWhitelisted();
 	}
 
+	public function getAvailableProfessions()
+	{
+		return craft()->apiHealthcare_professions->getAvailable();
+	}
+
 	public function getAllSpecialties()
 	{
 		return craft()->apiHealthcare_specialties->getAll();
@@ -23,55 +28,65 @@ class ApiHealthcareVariable
 		return craft()->apiHealthcare_specialties->getWhitelisted();
 	}
 
+	public function getAvailableSpecialties()
+	{
+		return craft()->apiHealthcare_specialties->getAvailable();
+	}
+
 	public function getWhitelistedLocations()
 	{
 		return craft()->apiHealthcare_locations->getWhitelisted();
 	}
 
+	public function getAvailableLocations()
+	{
+		return craft()->apiHealthcare_locations->getAvailable();
+	}
+
 	public function getJobResultsFromUrl()
 	{
-		return craft()->apiHealthcare_queries->getJobResultsFromUrl();
+		return craft()->apiHealthcare_jobs->getJobResultsFromUrl();
 	}
 
 	// DEPRECATED: use getJobResultsFromUrl() instead
 	public function getSearchResultsFromUrl()
 	{
-		return craft()->apiHealthcare_queries->getJobResultsFromUrl();
+		return craft()->apiHealthcare_jobs->getJobResultsFromUrl();
 	}
 
 	public function getJobListingByCriteria($criteria)
 	{
-		return craft()->apiHealthcare_queries->getJobListingByCriteria($criteria);
+		return craft()->apiHealthcare_jobs->getJobListingByCriteria($criteria);
 	}
 
-	public function getOrderById($id)
+	public function getOrderById($jobId)
 	{
-		return craft()->apiHealthcare_queries->getOrderById($id);
+		return craft()->apiHealthcare_jobs->getOrderById($jobId, 'per-diem');
 	}
 
-	public function getLtOrderById($id)
+	public function getLtOrderById($jobId)
 	{
-		return craft()->apiHealthcare_queries->getLtOrderById($id);
+		return craft()->apiHealthcare_jobs->getOrderById($jobId, 'travel-contracts');
 	}
 
 	public function getHotJobs($limit = null)
 	{
-		return craft()->apiHealthcare_queries->getHotJobs($limit);
+		return craft()->apiHealthcare_jobs->getHotJobs($limit);
 	}
 
 	public function youSearchedFor()
 	{
-		return craft()->apiHealthcare_queries->youSearchedFor();
+		return craft()->apiHealthcare_jobs->youSearchedFor();
 	}
 
 	public function jobSearchMetaTitle()
 	{
-		return craft()->apiHealthcare_queries->jobSearchTitle(true);
+		return craft()->apiHealthcare_jobs->jobSearchTitle(true);
 	}
 
 	public function jobSearchTitle()
 	{
-		return craft()->apiHealthcare_queries->jobSearchTitle();
+		return craft()->apiHealthcare_jobs->jobSearchTitle();
 	}
 
 	/*

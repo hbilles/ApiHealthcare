@@ -1,15 +1,29 @@
 <?php
 namespace Craft;
 
-class ApiHealthcare_QueriesController extends BaseController
+class ApiHealthcare_JobsController extends BaseController
 {
-	protected $allowAnonymous = array('actionGetJobSearchUrl', 'actionGetSearchUrl');
+	protected $allowAnonymous = array('actionGetJobSearchUrl', 'actionTriggerUpdate');
+
+	public function actionIndex()
+	{
+		$variables['jobs'] = craft()->apiHealthcare_jobs->getAll();
+		return $this->renderTemplate('apihealthcare/jobs', $variables);
+	}
+
+	public function actionUpdate()
+	{
+		if (craft()->apiHealthcare_jobs->updateRecords())
+		{
+			return $this->actionIndex();
+		}
+	}
 
 	public function actionGetJobSearchUrl()
 	{
 		$this->requirePostRequest();
 
-		$query = new ApiHealthcare_QueryModel();
+		$query = new ApiHealthcare_JobModel();
 
 		$query->jobTypeSlug    = craft()->request->getPost('jobType');
 		$query->professionSlug = craft()->request->getPost('profession');
@@ -32,7 +46,7 @@ class ApiHealthcare_QueriesController extends BaseController
 			}
 		}
 
-		$searchUrl = craft()->apiHealthcare_queries->getJobSearchUrl($query);
+		$searchUrl = craft()->apiHealthcare_jobs->getJobSearchUrl($query);
 
 		if ($searchUrl)
 		{
@@ -44,9 +58,15 @@ class ApiHealthcare_QueriesController extends BaseController
 		}
 	}
 
-	// DEPRECATED: use actionGetJobSearchUrl() instead
-	public function actionGetSearchUrl()
+	public function actionTriggerUpdate()
 	{
-		return $this->actionGetJobSearchUrl();
+		if (craft()->apiHealthcare_jobs->updateRecords())
+		{
+			return 'Jobs updated successfully.';
+		}
+		else
+		{
+			return 'Failed to update jobs.';
+		}
 	}
 }

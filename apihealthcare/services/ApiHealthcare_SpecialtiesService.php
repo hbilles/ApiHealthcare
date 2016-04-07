@@ -49,6 +49,40 @@ class ApiHealthcare_SpecialtiesService extends ApiHealthcare_BaseService
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getAvailable()
+	{
+		$specialtyModels = $this->getWhitelisted();
+		$jobs = craft()->apiHealthcare_jobs->getAll();
+
+		$jobSpecialties = array();
+		$availableSpecialties = array();
+
+		foreach ($jobs as $job)
+		{
+			$jobSpecialties[] = $job->specialtySlug;
+		}
+
+		foreach ($specialtyModels as $specialty)
+		{
+			if (in_array($specialty->slug, $jobSpecialties))
+			{
+				$availableSpecialties[] = $specialty;
+			}
+		}
+
+		if (count($availableSpecialties) > 0)
+		{
+			return $availableSpecialties;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * @param string $specialtyId
 	 * @return ApiHealthcare_SpecialtyModel
 	 */
@@ -118,6 +152,29 @@ class ApiHealthcare_SpecialtiesService extends ApiHealthcare_BaseService
 		}
 
 		return $specialtyRecord->name;
+	}
+
+	/**
+	 * @param string $name
+	 * @return string
+	 */
+	public function getSlugByName($name)
+	{
+		if (!$name)
+		{
+			return false;
+		}
+
+		$specialtyRecord = ApiHealthcare_SpecialtyRecord::model()->findByAttributes(array(
+			'name' => $name
+		));
+
+		if (!$specialtyRecord)
+		{
+			throw new Exception('Specialty with name of ' . $name . ' not found!');
+		}
+
+		return $specialtyRecord->slug;
 	}
 
 	/**

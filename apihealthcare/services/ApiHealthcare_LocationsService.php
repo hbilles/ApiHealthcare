@@ -56,6 +56,40 @@ class ApiHealthcare_LocationsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getAvailable()
+	{
+		$locationModels = $this->getWhitelisted();
+		$jobs = craft()->apiHealthcare_jobs->getAll();
+
+		$jobLocations = array();
+		$availableLocations = array();
+
+		foreach ($jobs as $job)
+		{
+			$jobLocations[] = $job->state;
+		}
+
+		foreach ($locationModels as $location)
+		{
+			if (in_array($location->abbreviation, $jobLocations))
+			{
+				$availableLocations[] = $location;
+			}
+		}
+
+		if (count($availableLocations) > 0)
+		{
+			return $availableLocations;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * @param string $locationId
 	 * @return ApiHealthcare_LocationModel
 	 */

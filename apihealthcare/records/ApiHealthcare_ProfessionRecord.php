@@ -32,7 +32,8 @@ class ApiHealthcare_ProfessionRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('certId'), 'unique' => true),
-			array('columns' => array('slug'), 'unique' => true)
+			array('columns' => array('slug'), 'unique' => true),
+			array('columns' => array('name'), 'unique' => true)
 		);
 	}
 

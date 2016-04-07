@@ -14,8 +14,17 @@ To install Perform, follow these steps:
 5.  Navigate to API Healthcare -> Specialties and click "Update Specialties".
 6.  Navigate to API Healthcare -> Per-Diem Clients to add whitelisted clients.
 7.  Navigate to API Healthcare -> Locations, click "Populate States" and then "Edit Search Options" to set whitelisted locations.
+8.  Navigate to API Healthcare -> Jobs, click "Update Jobs" to populate available jobs for search.
+9.  Add Cron job to periodically refresh cache of available jobs. For example:
+
+    0 0,6,12,18 0 0 0 /usr/bin/wget http://mysite.com/actions/apiHealthcare/jobs/triggerUpdate
 
 ## Changelog
+
+### 2.0.0
+
+* Search from local cache of available whitelisted jobs instead of hitting up API Healthcare for every request
+* Job search forms now only list available Professions, Specialties and Locations instead of the entire whitelist for each to improve search experience
 
 ### 1.0.1
 

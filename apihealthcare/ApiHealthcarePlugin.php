@@ -11,12 +11,12 @@ class ApiHealthcarePlugin extends BasePlugin
 
 	function getVersion()
 	{
-		return '1.0.1';
+		return '2.0.0';
 	}
 
 	public function getSchemaVersion()
 	{
-		return '1.0.0';
+		return '2.0.0';
 	}
 
 	function getDeveloper()
@@ -66,6 +66,8 @@ class ApiHealthcarePlugin extends BasePlugin
         	'apihealthcare/specialties/reset'                         => array('action' => 'apiHealthcare/specialties/reset'),
         	'apihealthcare/specialties/(?P<specialtyId>\d+)'          => array('action' => 'apiHealthcare/specialties/edit'),
         	'apihealthcare/specialties/edit-search'                   => array('action' => 'apiHealthcare/specialties/editSearchSettings'),
+        	'apihealthcare/jobs'                                      => array('action' => 'apiHealthcare/jobs/index'),
+        	'apihealthcare/jobs/update'                               => array('action' => 'apiHealthcare/jobs/update'),
         	'apihealthcare/per-diem-clients'                          => array('action' => 'apiHealthcare/perDiemClients/index'),
         	'apihealthcare/per-diem-clients/new'                      => array('action' => 'apiHealthcare/perDiemClients/edit'),
         	'apihealthcare/per-diem-clients/(?P<perDiemClientId>\d+)' => array('action' => 'apiHealthcare/perDiemClients/edit'),

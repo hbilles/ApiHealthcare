@@ -1,11 +1,14 @@
 <?php
 namespace Craft;
 
-class ApiHealthcare_QueryModel extends BaseModel
+class ApiHealthcare_JobModel extends BaseModel
 {
 	protected function defineAttributes()
 	{
 		return array(
+			'id'             => AttributeType::Number,
+			'jobId'          => AttributeType::Number,
+			'jobStatus'      => AttributeType::String,
 			'jobType'        => AttributeType::String,
 			'jobTypeSlug'    => AttributeType::Slug,
 			'profession'     => AttributeType::String,
@@ -14,27 +17,10 @@ class ApiHealthcare_QueryModel extends BaseModel
 			'specialtySlug'  => AttributeType::Slug,
 			'state'          => AttributeType::String,
 			'city'           => AttributeType::String,
-			'zipCode'        => AttributeType::Number,
-			'shiftStart'     => AttributeType::DateTime,
+			'zipCode'        => AttributeType::String,
 			'dateStart'      => AttributeType::DateTime,
-			'status'         => AttributeType::String,
-			'jobId'          => AttributeType::Number,
-			'clientName'     => AttributeType::String,
 			'isHotJob'       => AttributeType::Bool,
 			'description'    => AttributeType::String,
 		);
-	}
-
-	public function getSearchBaseUri()
-	{
-		$settings = craft()->plugins->getPlugin('apiHealthcare')->getSettings();
-		if ($settings->searchBaseUri)
-		{
-			return $settings->searchBaseUri;
-		}
-		else
-		{
-			throw new Exception("searchBaseUri field must be set on the plugin's settings page");
-		}
 	}
 }
