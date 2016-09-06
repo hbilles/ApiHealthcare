@@ -1,11 +1,11 @@
 # API Healthcare plugin for Craft CMS
 
-This plugin allows [Craft](http://buildwithcraft.com) websites to search and display open positions from a company's [API Healthcare](http://www.apihealthcare.com/) account using the ClearConnect 2.0 API.
+This plugin allows [Craft](http://craftcms.com) websites to search and display open positions from a company's [API Healthcare](http://www.apihealthcare.com/) (now GE Healthcare) account using the ClearConnect 2.0 API.
 
 
 ## Installation
 
-To install Perform, follow these steps:
+To install the API Healthcare plugin, follow these steps:
 
 1.  Upload the apihealthcare folder to your craft/plugins/ folder.
 2.  Go to Settings > Plugins from your Craft control panel and enable the API Healthcare plugin.
