@@ -684,4 +684,109 @@ class ApiHealthcare_JobsService extends ApiHealthcare_BaseService
 		return $jobRecord->delete();
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getJobData()
+	{
+		$jobs = $this->getAll();
+		$jobsSize = sizeof($jobs);
+		$i = 1;
+
+		$json = '{ "jobs": [';
+		foreach($jobs as $job)
+		{
+			$json .= '{ "id": "' . $job->id . '",'
+				. '"type": "' . $job->jobTypeSlug . '",'
+				. '"profession": "' . $job->professionSlug . '",'
+				. '"specialty": "' . $job->specialtySlug . '",'
+				. '"state": "' . $job->state . '"'
+				. '}';
+
+			if ($i < $jobsSize)
+			{
+				$json .= ',';
+			}
+
+			$i++;
+		}
+		$json .= '],';
+
+		$professions = craft()->apiHealthcare_professions->getAvailable();
+		$professionsSize = sizeof($professions);
+		$j = 1;
+
+		$json .= '"professions" : [';
+		foreach($professions as $profession)
+		{
+			$json .= '{ "id": "' . $profession->certId . '", '
+				. '"name": "' . $profession->name . '", '
+				. '"slug": "' . $profession->slug . '"'
+				. '}';
+
+			if ($j < $professionsSize)
+			{
+				$json .= ',';
+			}
+
+			$j++;
+		}
+		$json .= '],';
+
+		$specialties = craft()->apiHealthcare_specialties->getAvailable();
+		$specialtiesSize = sizeof($specialties);
+		$k = 1;
+
+		$json .= '"specialties" : [';
+		foreach($specialties as $specialty)
+		{
+			$json .= '{ "id": "' . $specialty->specId . '", '
+				. '"name": "' . $specialty->name . '", '
+				. '"slug": "' . $specialty->slug . '"'
+				. '}';
+
+			if ($k < $specialtiesSize)
+			{
+				$json .= ',';
+			}
+
+			$k++;
+		}
+		$json .= '],';
+
+		$locations = craft()->apiHealthcare_locations->getAvailable();
+		$locationsSize = sizeof($locations);
+		$m = 1;
+
+		$json .= '"locations" : [';
+		foreach($locations as $location)
+		{
+			$json .= '{ "id": "' . $location->id . '", '
+				. '"name": "' . $location->name . '", '
+				. '"abbreviation": "' . $location->abbreviation . '"'
+				. '}';
+
+			if ($m < $locationsSize)
+			{
+				$json .= ',';
+			}
+
+			$m++;
+		}
+		$json .= '],';
+
+		$json .= '"types" : ['
+			. '{ "id": "1",'
+			. '"name": "Per Diem",'
+			. '"slug": "per-diem"'
+			. '},'
+			. '{ "id": "2",'
+			. '"name": "Travel and Local Contracts",'
+			. '"slug": "travel-contracts"'
+			. '}'
+			. '] }';
+
+		return $json;
+	}
+
 }
