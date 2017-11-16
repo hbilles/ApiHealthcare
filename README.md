@@ -21,6 +21,10 @@ To install the API Healthcare plugin, follow these steps:
 
 ## Changelog
 
+### 2.1.0
+
+* Added getJobData() function to output json data of available jobs, professions, specialties & locations for frontend search filtering.
+
 ### 2.0.0
 
 * Search from local cache of available whitelisted jobs instead of hitting up API Healthcare for every request
